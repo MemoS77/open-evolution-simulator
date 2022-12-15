@@ -8,7 +8,5 @@ export default class EvolutionApp {
         console.info("OES init", a)
     }
 
-    forTest() {
-        return 3+4
-    }
+
 }
