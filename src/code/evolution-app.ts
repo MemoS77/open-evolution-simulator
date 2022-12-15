@@ -6,4 +6,8 @@ export default class EvolutionApp {
     init() {
         console.info("OES init")
     }
+
+    forTest() {
+        return 5+2
+    }
 }
