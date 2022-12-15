@@ -5,6 +5,7 @@
     "source": "src/index.html",
     "scripts": {
         "start": "npx parcel --open",
+        "build": "npx parcel build ",
         "test": "jest",
         "lint": "npx eslint src/**/*.ts --fix",
         "prepare": "husky install",
@@ -35,6 +36,6 @@
         "ts-node": "^10.9.1"
     },
     "lint-staged": {
-        "*": "npm run lint"
+        "*": "eslint --fix --max-warnings=0"
     }
 }

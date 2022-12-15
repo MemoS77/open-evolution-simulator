@@ -37,7 +37,7 @@
             "never"
         ],
         "no-unused-vars": "off",
-        "no-console": "warn",
+        "no-console": "off",
         "@typescript-eslint/no-unused-vars": "error",
         "@typescript-eslint/no-explicit-any": "error"
     }
