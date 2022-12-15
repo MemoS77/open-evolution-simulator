@@ -1,40 +1,40 @@
 {
-  "name": "open-evolution-simulator",
-  "version": "1.0.0",
-  "description": "Open Evolution Simulator",
-  "source": "src/index.html",
-  "scripts": {
-    "start": "npx parcel --open",
-    "test": "jest",
-    "lint": "npx eslint src/**/*.ts --fix",
-    "prepare": "husky install",
-    "check": "npm test"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/MemoS77/open-evolution-simulator.git"
-  },
-  "author": "Memo",
-  "license": "GPL-3.0",
-  "bugs": {
-    "url": "https://github.com/MemoS77/open-evolution-simulator/issues"
-  },
-  "homepage": "https://github.com/MemoS77/open-evolution-simulator#readme",
-  "devDependencies": {
-    "@jest/globals": "^29.3.1",
-    "@parcel/transformer-sass": "^2.8.2",
-    "@types/jest": "^29.2.4",
-    "@typescript-eslint/eslint-plugin": "^5.46.1",
-    "@typescript-eslint/parser": "^5.46.1",
-    "eslint": "^8.29.0",
-    "husky": "^8.0.2",
-    "jest-environment-jsdom": "^29.3.1",
-    "lint-staged": "^13.1.0",
-    "parcel": "^2.8.2",
-    "ts-jest": "^29.0.3",
-    "ts-node": "^10.9.1"
-  },
-  "lint-staged": {
-    "*": "npm run lint"
-  }
+    "name": "open-evolution-simulator",
+    "version": "1.0.0",
+    "description": "Open Evolution Simulator",
+    "source": "src/index.html",
+    "scripts": {
+        "start": "npx parcel --open",
+        "test": "jest",
+        "lint": "npx eslint src/**/*.ts --fix",
+        "prepare": "husky install",
+        "check": "npx lint-staged"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/MemoS77/open-evolution-simulator.git"
+    },
+    "author": "Memo",
+    "license": "GPL-3.0",
+    "bugs": {
+        "url": "https://github.com/MemoS77/open-evolution-simulator/issues"
+    },
+    "homepage": "https://github.com/MemoS77/open-evolution-simulator#readme",
+    "devDependencies": {
+        "@jest/globals": "^29.3.1",
+        "@parcel/transformer-sass": "^2.8.2",
+        "@types/jest": "^29.2.4",
+        "@typescript-eslint/eslint-plugin": "^5.46.1",
+        "@typescript-eslint/parser": "^5.46.1",
+        "eslint": "^8.29.0",
+        "husky": "^8.0.2",
+        "jest-environment-jsdom": "^29.3.1",
+        "lint-staged": "^13.1.0",
+        "parcel": "^2.8.2",
+        "ts-jest": "^29.0.3",
+        "ts-node": "^10.9.1"
+    },
+    "lint-staged": {
+        "*": "npm run lint"
+    }
 }
