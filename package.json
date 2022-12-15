@@ -1,0 +1,24 @@
+{
+  "name": "open-evolution-simulator",
+  "version": "1.0.0",
+  "description": "Open Evolution Simulator",
+  "source": "src/index.html",
+  "scripts": {
+    "start": "npx parcel --open",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MemoS77/open-evolution-simulator.git"
+  },
+  "author": "Memo",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/MemoS77/open-evolution-simulator/issues"
+  },
+  "homepage": "https://github.com/MemoS77/open-evolution-simulator#readme",
+  "devDependencies": {
+    "@parcel/transformer-sass": "^2.8.2",
+    "parcel": "^2.8.2"
+  }
+}
