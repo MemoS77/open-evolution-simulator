@@ -36,6 +36,6 @@
         "ts-node": "^10.9.1"
     },
     "lint-staged": {
-        "*": "eslint --fix --max-warnings=0"
+        "*.ts": "eslint --fix --max-warnings=0"
     }
 }
