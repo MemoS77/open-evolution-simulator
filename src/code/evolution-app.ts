@@ -1,13 +1,14 @@
 export default class EvolutionApp {
     constructor() {
         console.info("OES App Started")
-
     }
 
     init() {
-        console.info("OES init")
+        const a = 5
+        console.info("OES init", a)
     }
 
-    forTest() {return 3+4
+    forTest() {
+        return 3+4
     }
 }
