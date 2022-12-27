@@ -1,63 +1,22 @@
-import EngineState from "../enums/engine-state"
+import EngineInfo from "./engine-info"
 
 export default abstract class Engine {
 
-    private state: EngineState = EngineState.UNSET
+    protected abstract info: EngineInfo
 
-    getState(): EngineState {
-        return this.state
+    getTitle(): string {
+        return this.info.name + " " + this.info.version
     }
 
     /**
-     * Start evolution
+     * Work one life cycle of evolution
      */
-    protected abstract doStart(): void
-
-    /**
-     * Pause evolution
-     */
-    protected abstract doPause(): void
-
-    /**
-     * Full evolution stop
-     */
-    protected abstract doStop(): void
+    abstract nextStep(): void
 
     /**
      * Generate bots
      */
-    protected abstract doInit(): void
+    protected abstract init(): void
 
-    /**
-     * Start evolution
-     */
-    start(): void {
-        this.doStart()
-        this.state = EngineState.RUNNING
-    }
-
-    /**
-     * Pause evolution
-     */
-    pause(): void {
-        this.doPause()
-        this.state = EngineState.PAUSED
-    }
-
-    /**
-     * Full evolution stop
-     */
-    stop(): void {
-        this.doStop()
-        this.state = EngineState.IDLE
-    }
-
-    /**
-     * Generate bots
-     */
-    init(): void {
-        this.doInit()
-        this.state = EngineState.IDLE
-    }
 
 }

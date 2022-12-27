@@ -1,4 +1,3 @@
 import EvolutionApp from "./evolution-app"
-
-const app = new EvolutionApp()
-app.start()
+new EvolutionApp()
+console.info("OES App Started")
