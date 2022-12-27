@@ -1,37 +1,34 @@
 import Point from "./types/point"
 import {drawFPS} from "./funcs/fps"
-import {getCanvasCont, setFieldsList} from "./funcs/dom"
+import {getCanvasCont, setEnginesList, setFieldsList} from "./funcs/dom"
 import {bindPauseButton, bindResetButton, bindStartButton} from "./funcs/buttons"
 import EngineState from "./enums/engine-state"
 import Engine from "./engines/engine"
-import TestEngine from "./engines/basic/test-engine"
 import getFields from "./funcs/get-fields"
+import engines from "./engines"
 
-export default class EvolutionApp {
+export default class App {
     private canvas: HTMLCanvasElement
     private ctx: CanvasRenderingContext2D
     private viewSize: Point | undefined
     private readonly cont: HTMLDivElement
     private state: EngineState = EngineState.UNSET
-    private currentEngine: Engine
-    private engines = [new TestEngine()]
-    private cameraPos: Point = { x: 0, y: 0 }
-    // private cameraZoom = 1
-
+    private engine: Engine
 
     constructor() {
         this.cont = getCanvasCont()
         this.initCanvas()
         this.bindEvents()
+        setEnginesList(engines)
         this.onEngineSelect(0)
         this.loop()
     }
 
 
     onEngineSelect(index: number) {
-        this.currentEngine = this.engines[index]
-        const info = this.currentEngine.getInfo()
-        this.currentEngine.setField(getFields(info.id, info.version)[0])
+        this.engine = engines[index]
+        const info = this.engine.getInfo()
+        this.engine.init(getFields(info.id, info.version)[0], this.canvas)
         setFieldsList(info)
     }
 
@@ -40,16 +37,15 @@ export default class EvolutionApp {
         this.canvas = document.createElement("canvas")
         this.canvas.id = "oes-canvas"
         this.ctx = this.canvas.getContext("2d")!
-        this.initViewSize()
+        this.initCanvasSize()
         this.cont.appendChild(this.canvas)
     }
 
     private bindEvents() {
         window.addEventListener("resize", () => this.onResize())
         this.canvas.addEventListener("mousemove", (e) => {
-            if (e.buttons>0) {
-                this.cameraPos.x += e.movementX
-                this.cameraPos.y += e.movementY
+            if (e.buttons===4) {
+                this.engine.onDrag(e.movementX, e.movementY)
             }
         })
         bindStartButton(() => this.start())
@@ -58,11 +54,11 @@ export default class EvolutionApp {
     }
 
     private onResize() {
-        this.initViewSize()
+        this.initCanvasSize()
     }
 
 
-    private initViewSize(): void {
+    private initCanvasSize(): void {
         this.viewSize = { x: this.cont.clientWidth, y: this.cont.clientHeight }
         this.canvas.width = this.viewSize.x
         this.canvas.height = this.viewSize.y
@@ -74,8 +70,8 @@ export default class EvolutionApp {
      */
     loop() {
         if (this.state === EngineState.RUNNING) {
-            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
-            this.drawNextStep()
+            this.engine.nextStep()
+            this.engine.draw()
             drawFPS(this.ctx)
         }
         requestAnimationFrame(() => this.loop())
@@ -85,11 +81,6 @@ export default class EvolutionApp {
     // Start evolution
     start(): void {
         this.state = EngineState.RUNNING
-        const size = this.currentEngine.getFieldSize()
-        this.cameraPos = {
-            x: Math.round((this.canvas.width-size.x)/2),
-            y: Math.round((this.canvas.height-size.y)/2)
-        }
     }
 
     // Pause evolution
@@ -103,12 +94,5 @@ export default class EvolutionApp {
         this.state = EngineState.IDLE
     }
 
-    // Next evolution step
-    private drawNextStep() {
-        if (this.currentEngine) {
-            this.currentEngine.nextStep()
-            this.currentEngine.draw()
-            this.ctx.drawImage(this.currentEngine.getImage(), this.cameraPos.x, this.cameraPos.y)
-        }
-    }
+
 }

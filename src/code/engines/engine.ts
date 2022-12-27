@@ -1,44 +1,25 @@
 import EngineInfo from "../types/engine-info"
 import FieldInfo from "../types/field-info"
-import Point from "../types/point"
 
 export default abstract class Engine {
 
     protected canvas: HTMLCanvasElement
-    protected ctx: CanvasRenderingContext2D
     protected field: FieldInfo
-    protected info: EngineInfo
 
-    constructor() {
-        this.info = this.getInfo()
-    }
 
-    setField(field: FieldInfo) {
+    abstract onDrag(dx: number, dy: number): void
+
+    init(field: FieldInfo, canvas: HTMLCanvasElement): void {
         this.field = field
-        this.info = this.getInfo()
-        this.canvas = document.createElement("canvas")
-        this.canvas.width = this.field.size.x
-        this.canvas.height = this.field.size.y
-        this.ctx = this.canvas.getContext("2d")!
+        this.canvas = canvas
     }
 
     getTitle(): string {
-        return this.info.name + " " + this.info.version
+        const {name, version} = this.getInfo()
+        return `${name} ${version}`
     }
 
-    getFieldSize(): Point {
-        return this.field.size
-    }
-
-    getInfo(): EngineInfo {
-        return this.info
-    }
-
-    // Get image of current state
-    getImage(): HTMLCanvasElement {
-        return this.canvas
-    }
-
+    abstract getInfo(): EngineInfo
 
     // Next step of life cycle
     abstract nextStep(): void

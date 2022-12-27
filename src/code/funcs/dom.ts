@@ -1,5 +1,6 @@
 import EngineInfo from "../types/engine-info"
 import getFields from "./get-fields"
+import Engine from "../engines/engine"
 
 export function getCanvasCont(): HTMLDivElement {
     let cont = document.getElementById("oes-canvas-cont") as HTMLDivElement
@@ -21,6 +22,17 @@ export function setFieldsList(engine: EngineInfo) {
         const option = document.createElement("option")
         option.value = index.toString()
         option.innerText = field.name
+        list.appendChild(option)
+    })
+}
+
+export function setEnginesList(engines: Engine[]) {
+    const list = document.getElementById("engines-list") as HTMLSelectElement
+    list.innerHTML = ""
+    engines.forEach((engine, index) => {
+        const option = document.createElement("option")
+        option.value = index.toString()
+        option.innerText = engine.getTitle()
         list.appendChild(option)
     })
 }
