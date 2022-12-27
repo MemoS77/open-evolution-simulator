@@ -1,6 +1,6 @@
 import Point from "./types/point"
 import {drawFPS} from "./funcs/fps"
-import {getCanvasCont} from "./funcs/dom"
+import {getCanvasCont, setFieldsList} from "./funcs/dom"
 import {bindPauseButton, bindResetButton, bindStartButton} from "./funcs/buttons"
 import EngineState from "./enums/engine-state"
 import Engine from "./engines/engine"
@@ -13,19 +13,27 @@ export default class EvolutionApp {
     private viewSize: Point | undefined
     private readonly cont: HTMLDivElement
     private state: EngineState = EngineState.UNSET
-    private currentEngine: Engine | null = null
+    private currentEngine: Engine
+    private engines = [new TestEngine()]
+    private cameraPos: Point = { x: 0, y: 0 }
+    // private cameraZoom = 1
 
 
     constructor() {
         this.cont = getCanvasCont()
         this.initCanvas()
         this.bindEvents()
-        this.currentEngine = new TestEngine()
-        const info = this.currentEngine.getInfo()
-        this.currentEngine.setField(getFields(info.id, info.version)[0])
+        this.onEngineSelect(0)
         this.loop()
     }
 
+
+    onEngineSelect(index: number) {
+        this.currentEngine = this.engines[index]
+        const info = this.currentEngine.getInfo()
+        this.currentEngine.setField(getFields(info.id, info.version)[0])
+        setFieldsList(info)
+    }
 
 
     private initCanvas() {
@@ -38,6 +46,12 @@ export default class EvolutionApp {
 
     private bindEvents() {
         window.addEventListener("resize", () => this.onResize())
+        this.canvas.addEventListener("mousemove", (e) => {
+            if (e.buttons>0) {
+                this.cameraPos.x += e.movementX
+                this.cameraPos.y += e.movementY
+            }
+        })
         bindStartButton(() => this.start())
         bindResetButton(() => this.reset())
         bindPauseButton(() => this.pause())
@@ -71,6 +85,11 @@ export default class EvolutionApp {
     // Start evolution
     start(): void {
         this.state = EngineState.RUNNING
+        const size = this.currentEngine.getFieldSize()
+        this.cameraPos = {
+            x: Math.round((this.canvas.width-size.x)/2),
+            y: Math.round((this.canvas.height-size.y)/2)
+        }
     }
 
     // Pause evolution
@@ -89,7 +108,7 @@ export default class EvolutionApp {
         if (this.currentEngine) {
             this.currentEngine.nextStep()
             this.currentEngine.draw()
-            this.ctx.drawImage(this.currentEngine.getImage(), 0, 0)
+            this.ctx.drawImage(this.currentEngine.getImage(), this.cameraPos.x, this.cameraPos.y)
         }
     }
 }

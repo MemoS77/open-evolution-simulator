@@ -1,5 +1,6 @@
 import EngineInfo from "../types/engine-info"
 import FieldInfo from "../types/field-info"
+import Point from "../types/point"
 
 export default abstract class Engine {
 
@@ -23,6 +24,10 @@ export default abstract class Engine {
 
     getTitle(): string {
         return this.info.name + " " + this.info.version
+    }
+
+    getFieldSize(): Point {
+        return this.field.size
     }
 
     getInfo(): EngineInfo {
