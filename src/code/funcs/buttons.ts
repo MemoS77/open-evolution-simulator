@@ -14,3 +14,5 @@ export function bindResetButton(action: Action) {
     const button = document.getElementById("reset-button")! as HTMLButtonElement
     button.addEventListener("click", action)
 }
+
+

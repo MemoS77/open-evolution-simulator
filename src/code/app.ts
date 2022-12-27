@@ -25,12 +25,14 @@ export default class App {
     }
 
 
-    onEngineSelect(index: number) {
-        this.engine = engines[index]
+    onEngineSelect(index: string | number) {
+        this.reset()
+        this.engine = engines[+index]
         const info = this.engine.getInfo()
         const fields = getFields(info.id, info.version)
         this.engine.init(this.canvas, fields.length ? fields[0] : null)
         setFieldsList(info)
+        this.engine.clear()
     }
 
 
@@ -52,6 +54,11 @@ export default class App {
         bindStartButton(() => this.start())
         bindResetButton(() => this.reset())
         bindPauseButton(() => this.pause())
+
+        const select = document.getElementById("engines-list")! as HTMLSelectElement
+        select.addEventListener("change", (e) => this.onEngineSelect((e.target as HTMLOptionElement).value))
+
+
     }
 
     private onResize() {

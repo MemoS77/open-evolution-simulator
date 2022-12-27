@@ -6,7 +6,7 @@ export type CompatibleEngines = {
 }
 
 export default interface EngineParams {
-    name: string
+    name?: string
     compatibleEngines?: CompatibleEngines[]
     // If bot move to the right border, it will be moved to the left border
     infinityX?: boolean

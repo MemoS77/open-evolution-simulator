@@ -21,7 +21,7 @@ export function setFieldsList(engine: EngineInfo) {
     fields.forEach((field, index) => {
         const option = document.createElement("option")
         option.value = index.toString()
-        option.innerText = field.name
+        option.innerText = <string>field.name
         list.appendChild(option)
     })
 }
