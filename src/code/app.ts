@@ -28,7 +28,8 @@ export default class App {
     onEngineSelect(index: number) {
         this.engine = engines[index]
         const info = this.engine.getInfo()
-        this.engine.init(getFields(info.id, info.version)[0], this.canvas)
+        const fields = getFields(info.id, info.version)
+        this.engine.init(this.canvas, fields.length ? fields[0] : null)
         setFieldsList(info)
     }
 

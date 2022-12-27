@@ -5,12 +5,12 @@ export type CompatibleEngines = {
     versions: number[]
 }
 
-export default interface Field {
+export default interface EngineParams {
     name: string
     compatibleEngines?: CompatibleEngines[]
     // If bot move to the right border, it will be moved to the left border
-    infinityX: boolean
+    infinityX?: boolean
     // If bot move to the bottom border, it will be moved to the top border
-    infinityY: boolean
-    size: Point
+    infinityY?: boolean
+    size?: Point
 }

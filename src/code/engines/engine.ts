@@ -1,18 +1,20 @@
 import EngineInfo from "../types/engine-info"
-import FieldInfo from "../types/field-info"
+import EngineParams from "../types/engine-params"
 
 export default abstract class Engine {
 
     protected canvas: HTMLCanvasElement
-    protected field: FieldInfo
+    protected params: EngineParams | null = null
 
 
     abstract onDrag(dx: number, dy: number): void
 
-    init(field: FieldInfo, canvas: HTMLCanvasElement): void {
-        this.field = field
+    init(canvas: HTMLCanvasElement, params: EngineParams | null): void {
         this.canvas = canvas
+        this.params = params ?? this.getDefaultParams()
     }
+
+    abstract getDefaultParams(): EngineParams
 
     getTitle(): string {
         const {name, version} = this.getInfo()

@@ -1,5 +1,6 @@
 import EngineInfo from "../../types/engine-info"
 import Engine2d from "../engine2d"
+import EngineParams from "../../types/engine-params"
 
 export default class TestEngine extends Engine2d {
     getInfo(): EngineInfo {
@@ -16,11 +17,18 @@ export default class TestEngine extends Engine2d {
     private dx = 1
     private dy = 1
 
+    getDefaultParams(): EngineParams {
+        return {
+            name: "Default",
+            size: {x: 100, y: 100},
+        }
+    }
+
 
     draw(): void {
         this.clear()
         this.ctx.fillStyle = "white"
-        this.ctx.fillRect(this.camera.x, this.camera.y, this.field.size.x, this.field.size.y)
+        this.ctx.fillRect(this.camera.x, this.camera.y, this.params!.size!.x, this.params!.size!.y)
         this.ctx.fillStyle = "red"
         this.ctx.fillRect(this.testX+this.camera.x, this.testY+this.camera.y, 17, 17)
     }
@@ -28,16 +36,18 @@ export default class TestEngine extends Engine2d {
     nextStep(): void {
         this.testX += (1+Math.round(Math.random()))*this.dx
         this.testY += (1+Math.round(Math.random()))*this.dy
-        if (this.testX>this.field.size.x) {
-            this.testX = this.field.size.x
+        const size = this.params!.size!
+
+        if (this.testX>size.x) {
+            this.testX = size.x
             this.dx = -this.dx
         }
         if (this.testX<0) {
             this.testX = 0
             this.dx = -this.dx
         }
-        if (this.testY>this.field.size.y) {
-            this.testY = this.field.size.y
+        if (this.testY>size.y) {
+            this.testY = size.y
             this.dy = -this.dy
         }
         if (this.testY<0) {
