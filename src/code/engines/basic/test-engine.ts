@@ -1,22 +1,21 @@
-import Field from "../../field"
-import BasicEngine from "../basic-engine"
+import EngineInfo from "../../types/engine-info"
+import Engine from "../engine"
 
-export default class BasicField extends Field {
-
-    testX = 1
-    testY = 1
-    dx = 1
-    dy = 1
-
-
-    constructor() {
-        super(new BasicEngine(), {
-            name: "Basic field",
-            infinityY: false,
-            infinityX: true,
-            size: { x: 800, y: 600 }
-        })
+export default class TestEngine extends Engine {
+    getInfo(): EngineInfo {
+        return {
+            id: "test",
+            name: "First Test Engine",
+            version: 1,
+            description: "Experimental engine"
+        }
     }
+
+    private testX = 0
+    private testY = 0
+    private dx = 1
+    private dy = 1
+
 
     draw(): void {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
@@ -27,16 +26,16 @@ export default class BasicField extends Field {
     nextStep(): void {
         this.testX += (1+Math.round(Math.random()))*this.dx
         this.testY += (1+Math.round(Math.random()))*this.dy
-        if (this.testX>this.info.size.x) {
-            this.testX = this.info.size.x
+        if (this.testX>this.field.size.x) {
+            this.testX = this.field.size.x
             this.dx = -this.dx
         }
         if (this.testX<0) {
             this.testX = 0
             this.dx = -this.dx
         }
-        if (this.testY>this.info.size.y) {
-            this.testY = this.info.size.y
+        if (this.testY>this.field.size.y) {
+            this.testY = this.field.size.y
             this.dy = -this.dy
         }
         if (this.testY<0) {
@@ -44,5 +43,4 @@ export default class BasicField extends Field {
             this.dy = -this.dy
         }
     }
-
 }

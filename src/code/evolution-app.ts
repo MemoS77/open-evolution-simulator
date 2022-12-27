@@ -3,8 +3,9 @@ import {drawFPS} from "./funcs/fps"
 import {getCanvasCont} from "./funcs/dom"
 import {bindPauseButton, bindResetButton, bindStartButton} from "./funcs/buttons"
 import EngineState from "./enums/engine-state"
-import Field from "./engines/field"
-import BasicField from "./engines/basic/fileds/basic-field"
+import Engine from "./engines/engine"
+import TestEngine from "./engines/basic/test-engine"
+import getFields from "./funcs/get-fields"
 
 export default class EvolutionApp {
     private canvas: HTMLCanvasElement
@@ -12,15 +13,20 @@ export default class EvolutionApp {
     private viewSize: Point | undefined
     private readonly cont: HTMLDivElement
     private state: EngineState = EngineState.UNSET
-    private currentField: Field | null = null
+    private currentEngine: Engine | null = null
+
 
     constructor() {
         this.cont = getCanvasCont()
         this.initCanvas()
         this.bindEvents()
-        this.currentField = new BasicField()
+        this.currentEngine = new TestEngine()
+        const info = this.currentEngine.getInfo()
+        this.currentEngine.setField(getFields(info.id, info.version)[0])
         this.loop()
     }
+
+
 
     private initCanvas() {
         this.canvas = document.createElement("canvas")
@@ -80,10 +86,10 @@ export default class EvolutionApp {
 
     // Next evolution step
     private drawNextStep() {
-        if (this.currentField) {
-            this.currentField.nextStep()
-            this.currentField.draw()
-            this.ctx.drawImage(this.currentField.getImage(), 0, 0)
+        if (this.currentEngine) {
+            this.currentEngine.nextStep()
+            this.currentEngine.draw()
+            this.ctx.drawImage(this.currentEngine.getImage(), 0, 0)
         }
     }
 }
