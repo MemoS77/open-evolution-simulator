@@ -1,3 +1,5 @@
+import {infoFont} from "../inc/const"
+
 let lastPerfomance = performance.now()
 
 export function getFPS() {
@@ -11,7 +13,8 @@ export function getFPS() {
     return 60
 }
 
-
 export function drawFPS(ctx: CanvasRenderingContext2D) {
+    ctx.fillStyle = "Black"
+    ctx.font      = infoFont
     ctx.fillText(getFPS() + " fps", 10, 26)
 }

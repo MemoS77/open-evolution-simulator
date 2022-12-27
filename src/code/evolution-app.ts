@@ -1,5 +1,7 @@
 import Point from "./types/point"
 import {drawFPS} from "./funcs/fps"
+import {getCanvasCont} from "./funcs/dom"
+import {bindPauseButton, bindResetButton, bindStartButton} from "./funcs/buttons"
 
 export default class EvolutionApp {
     private canvas: HTMLCanvasElement
@@ -7,27 +9,27 @@ export default class EvolutionApp {
     private viewSize: Point | undefined
     private readonly cont: HTMLDivElement
 
-
-
     constructor() {
         console.info("OES App Started")
-        this.cont = document.getElementById("oes-canvas-cont") as HTMLDivElement
-        if (!this.cont) {
-            this.cont = document.createElement("div")
-            this.cont.id = "oes-canvas-cont"
-            document.body.appendChild(this.cont)
-        }
+        this.cont = getCanvasCont()
+        this.initCanvas()
+        this.bindEvents()
+        this.loop()
+    }
+
+    private initCanvas() {
         this.canvas = document.createElement("canvas")
         this.canvas.id = "oes-canvas"
         this.ctx = this.canvas.getContext("2d")!
         this.initViewSize()
-        this.cont!.appendChild(this.canvas)
-        this.bindEvents()
-        setTimeout(()=>this.loop())
+        this.cont.appendChild(this.canvas)
     }
 
     private bindEvents() {
-        window.addEventListener("resize", () =>     this.onResize())
+        window.addEventListener("resize", () => this.onResize())
+        bindStartButton(() => this.start())
+        bindResetButton(() => this.reset())
+        bindPauseButton(() => this.pause())
     }
 
     private onResize() {
@@ -42,10 +44,11 @@ export default class EvolutionApp {
     }
 
 
+    /**
+     * Main draw loop
+     */
     loop() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
-        this.ctx.fillStyle = "red"
-        this.ctx.fillRect(222, 222, 300*Math.random(), 300)
         drawFPS(this.ctx)
         requestAnimationFrame(() => this.loop())
     }
@@ -59,8 +62,8 @@ export default class EvolutionApp {
         console.log("Pause")
     }
 
-    stop() {
-        console.log("Stop")
+    reset() {
+        console.log("Reset")
     }
 
 
