@@ -6,7 +6,7 @@ export type EvoParams = {
     defaultEnergy: number,
     // Энергия, необходимая для размножения
     energyForReproduction: number,
-    // Максимальная энергия бота. Больше набрать нельзя. При достижении организм делится
+    // Максимальная энергия бота. Больше набрать нельзя
     maxBotEnergy: number,
     // Количество энергии оставляемой ботом после смерти
     deathBotEnergy: number,

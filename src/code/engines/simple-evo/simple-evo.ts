@@ -4,9 +4,9 @@ import EngineParams from "../../types/engine-params"
 import paramsList, {EvoEngineParams} from "./params-list"
 import Bot from "./bot"
 import {ActionMode, CellMode, Direction} from "./enums"
-import {RandomBot} from "./random-bot"
 import Point from "../../types/point"
 import {BotAction, Cell} from "./types"
+import FirstBot from "./first-bot"
 
 const drawCellSize = 12
 const padding = 1
@@ -36,11 +36,11 @@ export default class SimpleEvo extends Engine2d {
                 const c = this.cells[i][j]
 
                 if (c.mode !== CellMode.Empty) {
-                    this.ctx.fillStyle = c.mode === CellMode.UnbreakableBarrier ? "#000000" : "#777"
+                    this.ctx.fillStyle = c.mode === CellMode.UnbreakableBarrier ? "#ffffff" : "#777"
                 } else {
-                    const green = Math.floor(c.energy/this.params!.conf.maxCellEnergy*255)
-                    const blue = Math.floor(c.organic/this.params!.conf.maxCellOrganic*255)
-                    this.ctx.fillStyle = `rgb(0,${green},${blue})`
+                    const green = Math.floor((c.energy)/(this.params!.conf.maxCellEnergy)*255)
+                    const blue = Math.floor((c.organic)/(this.params!.conf.maxCellOrganic)*255)
+                    this.ctx.fillStyle = `rgb(20,${green},${blue})`
                 }
 
                 const cx = i * drawCellSize + this.camera.x + padding
@@ -49,7 +49,9 @@ export default class SimpleEvo extends Engine2d {
                 this.ctx.fillRect(cx, cy, innerCellSize, innerCellSize)
                 const bot = this.findBot(i, j)
                 if (bot) {
-                    this.ctx.fillStyle = "rgba(255,0,0,0.7)"
+                    const def = 200
+                    const red = Math.floor((bot.energy+def)/(def+this.params!.conf.maxBotEnergy)*255)
+                    this.ctx.fillStyle = `rgba(${red},0,0,0.8)`
                     this.ctx.fillRect(cx, cy, innerCellSize, innerCellSize)
                 }
 
@@ -101,12 +103,11 @@ export default class SimpleEvo extends Engine2d {
                         if (targetBot) {
                             // Передача энергии
                             targetBot.energy += energy
+                            bot.energy -= energy
                         } else {
                             // Размножение
                             if (cell.mode === CellMode.Empty && bot.energy >= this.params!.conf.energyForReproduction) {
-                                bot.energy = Math.floor(bot.energy / 2)
-                                const newBot = Object.assign({}, bot)
-                                this.bots.push(newBot)
+                                this.addBot( bot.reproduction({x, y}))
                             }
                         }
                     }
@@ -130,7 +131,7 @@ export default class SimpleEvo extends Engine2d {
                     }
                     break
                 default:
-                    if (cell.mode === CellMode.Empty) {
+                    if (cell.mode === CellMode.Empty && !targetBot) {
                         bot.position.x = x
                         bot.position.y = y
                     }
@@ -141,7 +142,7 @@ export default class SimpleEvo extends Engine2d {
     }
 
     private findBot(x: number, y: number): Bot | undefined {
-        return this.bots.find(b => b.position.x == x && b.position.y == y)
+        return this.bots.find(b => b.position.x === x && b.position.y === y)
     }
 
     nextStep(): void {
@@ -152,6 +153,11 @@ export default class SimpleEvo extends Engine2d {
         this.bots.forEach(b => {
             if (b.energy <= 0) {
                 this.cells[b.position.x][b.position.y].organic += this.params!.conf.deathBotEnergy
+                if (this.cells[b.position.x][b.position.y].organic> this.params!.conf.maxCellOrganic) {
+                    this.cells[b.position.x][b.position.y].organic = this.params!.conf.maxCellOrganic
+                }
+            } else if (b.energy>this.params!.conf.maxBotEnergy) {
+                b.energy = this.params!.conf.maxBotEnergy
             }
         })
         this.bots = this.bots.filter(b => b.energy > 0)
@@ -160,6 +166,10 @@ export default class SimpleEvo extends Engine2d {
     reset(): void {
         this.initCells()
         this.initBots()
+    }
+
+    private addBot(bot: Bot): void {
+        this.bots.push(bot)
     }
 
     private initBots() {
@@ -172,8 +182,7 @@ export default class SimpleEvo extends Engine2d {
                     y: Math.floor(Math.random() * this.params!.size.y),
                 }
             }  while (this.cells[p.x][p.y].mode !== CellMode.Empty || this.findBot(p.x, p.y))
-
-            this.bots.push(new RandomBot(p, this.params!.conf))
+            this.addBot(new FirstBot(p, this.params!.conf))
         }
     }
 
@@ -191,7 +200,7 @@ export default class SimpleEvo extends Engine2d {
                     organic: 0
                 }
                 this.cells[i][j].mode = (i>=halfX1 && i<=halfX2)
-                    ? CellMode.BreakableBarrier
+                    ? j<20 ? CellMode.UnbreakableBarrier : CellMode.BreakableBarrier
                     : CellMode.Empty
                 if ((this.cells[i][j].mode === CellMode.Empty)&&(Math.random()<0.1)) {
                     this.cells[i][j].energy = Math.ceil(Math.random() * this.params!.conf.maxCellEnergy)

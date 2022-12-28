@@ -4,11 +4,8 @@ import {ActionMode, Direction} from "./enums"
 import {randomInt} from "../../funcs/buttons"
 
 export class RandomBot extends Bot  {
-    isRelative(): boolean {
-        return false
-    }
 
-    isSimilar(): boolean {
+    isRelated(): boolean {
         return false
     }
 
