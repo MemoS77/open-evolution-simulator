@@ -15,4 +15,8 @@ export function bindResetButton(action: Action) {
     button.addEventListener("click", action)
 }
 
+export function randomInt(min: number, max: number): number {
+    return Math.floor(Math.random() * (max - min + 1)) + min
+}
+
 

@@ -4,7 +4,6 @@ import {getCanvasCont, setEnginesList, setParamsList} from "./funcs/dom"
 import {bindPauseButton, bindResetButton, bindStartButton} from "./funcs/buttons"
 import EngineState from "./enums/engine-state"
 import Engine from "./engines/engine"
-import getFields from "./funcs/get-fields"
 import engines from "./engines"
 
 export default class App {
@@ -28,10 +27,9 @@ export default class App {
     onEngineSelect(index: string | number) {
         this.reset()
         this.engine = engines[+index]
-        const info = this.engine.getInfo()
-        const fields = getFields(info.id, info.version)
-        this.engine.init(this.canvas, fields.length ? fields[0] : null)
-        setParamsList(this.engine)
+        //const info = this.engine.getInfo()
+        const params = setParamsList(this.engine)
+        this.engine.init(this.canvas, params.length ? params[0] : null)
         this.engine.clear()
     }
 

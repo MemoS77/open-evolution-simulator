@@ -1,0 +1,35 @@
+import {ActionMode, CellMode, Direction} from "./enums"
+
+// Условия мира
+export type EvoParams = {
+    // Энергия бота по умолчанию при создании поля
+    defaultEnergy: number,
+    // Энергия, необходимая для размножения
+    energyForReproduction: number,
+    // Максимальная энергия бота. Больше набрать нельзя. При достижении организм делится
+    maxBotEnergy: number,
+    // Количество энергии оставляемой ботом после смерти
+    deathBotEnergy: number,
+    // Максимальная энергия в ячейке
+    maxCellEnergy: number,
+    // Максимально органики в клетке
+    maxCellOrganic: number
+}
+
+
+export type Cell = {
+    mode: CellMode,
+    // Количество бесконечной энергии
+    energy: number,
+    // Количество органики (конечная энергия)
+    organic: number,
+}
+
+
+
+// Действие которое доложен совершить бот после работы его геномы
+export type BotAction = {
+    direction: Direction,
+    strength: number,
+    mode: ActionMode
+}
