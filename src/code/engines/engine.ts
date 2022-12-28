@@ -11,11 +11,10 @@ export default abstract class Engine {
 
     init(canvas: HTMLCanvasElement, params: EngineParams | null): void {
         this.canvas = canvas
-        this.params = params ?? this.getDefaultParams()
+        this.params = params
         this.reset()
     }
 
-    abstract getDefaultParams(): EngineParams
 
     abstract reset(): void
 

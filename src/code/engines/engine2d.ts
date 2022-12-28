@@ -15,8 +15,8 @@ export default abstract class Engine2d extends Engine {
     }
 
     centerCamera() {
-        const x =  (this.params && this.params.size) ? this.params.size.x : 0
-        const y =  (this.params && this.params.size) ? this.params.size.y : 0
+        const x =  this.params ? this.params.size!.x : 0
+        const y =  this.params ? this.params.size!.y : 0
 
         this.camera = {
             x: Math.round((this.canvas.width-x)/2),
@@ -34,11 +34,5 @@ export default abstract class Engine2d extends Engine {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
     }
 
-    getDefaultParams(): EngineParams {
-        return {
-            name: "Unset params",
-            size: {x: 100, y: 100},
-        }
-    }
 
 }
