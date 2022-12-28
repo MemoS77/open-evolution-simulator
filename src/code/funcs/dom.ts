@@ -1,5 +1,3 @@
-import EngineInfo from "../types/engine-info"
-import getFields from "./get-fields"
 import Engine from "../engines/engine"
 
 export function getCanvasCont(): HTMLDivElement {
@@ -14,8 +12,8 @@ export function getCanvasCont(): HTMLDivElement {
     return cont
 }
 
-export function setFieldsList(engine: EngineInfo) {
-    const fields = getFields(engine.id, engine.version)
+export function setParamsList(engine: Engine) {
+    const fields = engine.getParamsList()
     const list = document.getElementById("fields-list") as HTMLSelectElement
     list.innerHTML = ""
     fields.forEach((field, index) => {

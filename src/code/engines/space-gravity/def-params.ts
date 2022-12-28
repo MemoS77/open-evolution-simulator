@@ -8,7 +8,10 @@ const defParams: EngineParams = {
     infinityY: true,
     conf: {
         glueDistance: 3,
-        maxMass: 10
+        maxMass: 10,
+        densityConst: 0.5,
+        gravityConst: 1
+
     }
 }
 

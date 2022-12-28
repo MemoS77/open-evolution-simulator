@@ -14,7 +14,7 @@ export function getFPS() {
 }
 
 export function drawFPS(ctx: CanvasRenderingContext2D) {
-    ctx.fillStyle = "Black"
+    ctx.fillStyle = "Gray"
     ctx.font      = infoFont
     ctx.fillText(getFPS() + " fps", 10, 26)
 }
