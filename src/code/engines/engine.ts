@@ -29,5 +29,4 @@ export default abstract class Engine {
     // Visualize current state of field on virtual canvas
     abstract draw(): void
     abstract clear(): void
-
 }

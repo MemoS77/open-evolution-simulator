@@ -1,6 +1,5 @@
 import EngineInfo from "../../types/engine-info"
 import Engine2d from "../engine2d"
-import EngineParams from "../../types/engine-params"
 
 export default class TestEngine extends Engine2d {
     getInfo(): EngineInfo {
@@ -17,12 +16,6 @@ export default class TestEngine extends Engine2d {
     private dx = 1
     private dy = 1
 
-    getDefaultParams(): EngineParams {
-        return {
-            name: "Default",
-            size: {x: 100, y: 100},
-        }
-    }
 
 
     draw(): void {

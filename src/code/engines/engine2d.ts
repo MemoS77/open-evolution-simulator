@@ -30,8 +30,15 @@ export default abstract class Engine2d extends Engine {
         this.camera.y += dy
     }
 
-    protected clear() {
+    clear() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
+    }
+
+    getDefaultParams(): EngineParams {
+        return {
+            name: "Unset params",
+            size: {x: 100, y: 100},
+        }
     }
 
 }

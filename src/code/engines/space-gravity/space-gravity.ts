@@ -1,6 +1,5 @@
 import Engine2d from "../engine2d"
 import EngineInfo from "../../types/engine-info"
-import EngineParams from "../../types/engine-params"
 
 export default class SpaceGravityEngine extends Engine2d {
     getInfo(): EngineInfo {
@@ -21,8 +20,6 @@ export default class SpaceGravityEngine extends Engine2d {
         //
     }
 
-    getDefaultParams(): EngineParams {
-        return {}
-    }
+
 
 }
