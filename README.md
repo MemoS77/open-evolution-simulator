@@ -11,7 +11,9 @@ to /src/engines/ and a new class inheriting engine2d.ts
 
 You can share your engine by forking the project and creating a pull request to the main branch.
 
+
 --- 
+
 
 Проект представляет собой песочницу для создания и визуализации моделей генетических алгоритмов,
 искусственных форм жизни, симуляции эволюции и т.п. Кроме того, приложение возможно применять для
