@@ -3,8 +3,14 @@ import EngineInfo from "../../types/engine-info"
 import {Planet, SpaceConf} from "./types"
 import defParams from "./def-params"
 import Color from "./color"
+import engineParams from "../../types/engine-params"
+import paramsList from "./params-list"
 
 export default class SpaceGravityEngine extends Engine2d {
+
+    getParamsList(): engineParams[] {
+        return [defParams, ...paramsList]
+    }
 
     planets: Planet[] = []
 
@@ -56,7 +62,7 @@ export default class SpaceGravityEngine extends Engine2d {
                 let fy = 0
                 let force = 1
 
-                if (dist < touchDist) {
+                if (dist <= touchDist) {
                     // Objects touch each other
                     planet.velocity.x = (planet.velocity.x * planet.mass + other.velocity.x * other.mass) / (planet.mass + other.mass)
                     planet.velocity.y = (planet.velocity.y * planet.mass + other.velocity.y * other.mass) / (planet.mass + other.mass)
@@ -67,7 +73,7 @@ export default class SpaceGravityEngine extends Engine2d {
                         other.exists = false
                     }
                 } else {
-                    force = other.mass / (dist * dist)
+                    force = other.mass / (dist * dist) * this.conf.gravityConst
                     fx = force * dx / dist
                     fy = force * dy / dist
                     planet.velocity.x += fx
@@ -89,7 +95,7 @@ export default class SpaceGravityEngine extends Engine2d {
     }
 
     calcRadius(mass: number): number {
-        return Math.pow(mass, 0.4)
+        return Math.pow(mass, this.conf.densityConst)
     }
 
     reset(): void {

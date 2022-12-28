@@ -15,6 +15,13 @@ export default abstract class Engine {
         this.reset()
     }
 
+    abstract getParamsList(): EngineParams[]
+
+    onParamsListSelect(index: number) {
+        console.log("params", index)
+        this.params = this.getParamsList()[index]
+        this.reset()
+    }
 
     abstract reset(): void
 

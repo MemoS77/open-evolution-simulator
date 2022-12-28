@@ -13,5 +13,7 @@ export interface Planet {
 export type SpaceConf = {
     maxMass: number
     glueDistance: number
+    densityConst: number // 0-1. Чем меньше, тем плотнее. 1 - радиус равен массе
+    gravityConst: number
 }
 

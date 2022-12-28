@@ -1,1 +1,1 @@
-export const infoFont = "normal 10pt Roboto"
+export const infoFont = "normal 11pt Roboto"

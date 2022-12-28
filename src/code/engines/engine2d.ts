@@ -25,6 +25,11 @@ export default abstract class Engine2d extends Engine {
         }
     }
 
+    override onParamsListSelect(index: number) {
+        super.onParamsListSelect(index)
+        this.centerCamera()
+    }
+
     onDrag(dx: number, dy: number) {
         this.camera.x += dx
         this.camera.y += dy
