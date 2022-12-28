@@ -1,12 +1,10 @@
-import Field from "../types/field-info"
+import EngineParams from "../types/engine-params"
 
-const fields: Field[] = [
+const fields: EngineParams[] = [
     {
         name: "Test field",
-        size: { x: 500, y: 500 },
+        size: { x: 400, y: 300 },
         compatibleEngines: [{id: "test", versions: [1]}],
-        infinityX: false,
-        infinityY: false,
     }]
 
 export default fields
