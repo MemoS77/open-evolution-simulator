@@ -5,6 +5,7 @@ export type CompatibleEngines = {
     versions: number[]
 }
 
+// Config for engine
 export default interface EngineParams {
     name: string
     size: Point
@@ -13,6 +14,8 @@ export default interface EngineParams {
     infinityX?: boolean
     // If bot move to the bottom border, it will be moved to the top border
     infinityY?: boolean
+    // Count of objects on the field
     count?: number
+    // Other params
     conf?: object
 }

@@ -11,10 +11,10 @@ export default class TestEngine extends Engine2d {
         }
     }
 
-    private testX = 0
-    private testY = 0
-    private dx = 1
-    private dy = 1
+    private testX: number
+    private testY: number
+    private dx: number
+    private dy: number
 
 
 
@@ -47,5 +47,12 @@ export default class TestEngine extends Engine2d {
             this.testY = 0
             this.dy = -this.dy
         }
+    }
+
+    reset(): void {
+        this.testX = 1
+        this.testY = 1
+        this.dx = 1
+        this.dy = 1
     }
 }

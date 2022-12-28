@@ -1,7 +1,14 @@
 import Engine2d from "../engine2d"
 import EngineInfo from "../../types/engine-info"
+import {Planet} from "./types"
 
 export default class SpaceGravityEngine extends Engine2d {
+
+    planets: Planet[] = []
+
+
+
+
     getInfo(): EngineInfo {
         return {
             id: "gravity",
@@ -17,6 +24,10 @@ export default class SpaceGravityEngine extends Engine2d {
     }
 
     nextStep(): void {
+        //
+    }
+
+    reset(): void {
         //
     }
 

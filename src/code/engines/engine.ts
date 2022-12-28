@@ -12,9 +12,12 @@ export default abstract class Engine {
     init(canvas: HTMLCanvasElement, params: EngineParams | null): void {
         this.canvas = canvas
         this.params = params ?? this.getDefaultParams()
+        this.reset()
     }
 
     abstract getDefaultParams(): EngineParams
+
+    abstract reset(): void
 
     getTitle(): string {
         const {name, version} = this.getInfo()

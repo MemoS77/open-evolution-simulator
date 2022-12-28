@@ -100,6 +100,10 @@ export default class App {
 
     reset(): void {
         this.state = EngineState.IDLE
+        if (this.engine)    {
+            this.engine.reset()
+            this.engine.draw()
+        }
     }
 
 
