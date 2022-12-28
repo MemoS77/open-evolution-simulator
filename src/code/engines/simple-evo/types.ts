@@ -30,6 +30,6 @@ export type Cell = {
 // Действие которое доложен совершить бот после работы его геномы
 export type BotAction = {
     direction: Direction,
-    strength: number,
     mode: ActionMode
 }
+

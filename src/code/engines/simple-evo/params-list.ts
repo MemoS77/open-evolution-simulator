@@ -11,8 +11,8 @@ const paramsList: EvoEngineParams[] = [{
     size: {x: 100, y: 70},
     count: 500,
     conf: {
-        defaultEnergy: 70,
-        energyForReproduction: 150,
+        defaultEnergy: 80,
+        energyForReproduction: 100,
         maxBotEnergy: 400,
         deathBotEnergy: 30,
         maxCellEnergy: 5,

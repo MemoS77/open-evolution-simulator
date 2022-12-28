@@ -96,7 +96,7 @@ export default class SimpleEvo extends Engine2d {
 
             if (cell.mode !== CellMode.UnbreakableBarrier) {
 
-                const energy = Math.min(bot.energy, action.strength)
+                const energy = Math.floor(bot.energy/2)
                 switch (action.mode) {
                 case ActionMode.Transfer:
                     if (action.direction === Direction.Stay) bot.energy -= energy; else {
@@ -123,6 +123,7 @@ export default class SimpleEvo extends Engine2d {
                         if (cell.organic>0) {
                             // Съедание органики
                             const e = Math.min(cell.organic, energy)
+                            console.log("eat", e)
                             bot.energy += e
                             cell.organic -= e
                         } else {
@@ -148,7 +149,7 @@ export default class SimpleEvo extends Engine2d {
     nextStep(): void {
         this.bots.forEach(b => {
             b.energy--
-            this.doBotAction(b,   b.getAction())
+            this.doBotAction(b, b.getAction(this.cells, this.bots))
         })
         this.bots.forEach(b => {
             if (b.energy <= 0) {
@@ -191,6 +192,7 @@ export default class SimpleEvo extends Engine2d {
 
         const halfX1 = Math.floor(this.params!.size.x/2)-1
         const halfX2 = halfX1+3
+        const halfY = Math.floor(this.params!.size.y/2)
         for (let i=0; i<this.params!.size.x; i++) {
             this.cells[i] = []
             for (let j=0; j<this.params!.size.y; j++) {
@@ -200,10 +202,14 @@ export default class SimpleEvo extends Engine2d {
                     organic: 0
                 }
                 this.cells[i][j].mode = (i>=halfX1 && i<=halfX2)
-                    ? j<20 ? CellMode.UnbreakableBarrier : CellMode.BreakableBarrier
+                    ? j<halfY ? CellMode.UnbreakableBarrier : CellMode.BreakableBarrier
                     : CellMode.Empty
-                if ((this.cells[i][j].mode === CellMode.Empty)&&(Math.random()<0.1)) {
-                    this.cells[i][j].energy = Math.ceil(Math.random() * this.params!.conf.maxCellEnergy)
+                if ((this.cells[i][j].mode === CellMode.Empty)&&(Math.random()<0.2)) {
+                    if (j<halfY) {
+                        this.cells[i][j].energy = Math.ceil(Math.random() * this.params!.conf.maxCellEnergy)
+                    }   else {
+                        this.cells[i][j].organic = Math.ceil(Math.random() * this.params!.conf.maxCellOrganic)
+                    }
                 }
             }
         }

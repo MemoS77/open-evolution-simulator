@@ -12,8 +12,11 @@ export class RandomBot extends Bot  {
     getAction(): BotAction {
         return {
             direction: randomInt(0, Object.keys(Direction).length-1),
-            strength: 5,
             mode: randomInt(0, Object.keys(ActionMode).length-1)
         }
+    }
+
+    init(): void {
+        //
     }
 }
