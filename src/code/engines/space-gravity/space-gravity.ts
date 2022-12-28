@@ -2,10 +2,13 @@ import Engine2d from "../engine2d"
 import EngineInfo from "../../types/engine-info"
 import {Planet, SpaceConf} from "./types"
 import defParams from "./def-params"
+import Color from "./color"
 
 export default class SpaceGravityEngine extends Engine2d {
 
     planets: Planet[] = []
+
+    conf: SpaceConf
 
 
 
@@ -28,12 +31,11 @@ export default class SpaceGravityEngine extends Engine2d {
 
         const twoPi = 2 * Math.PI
         this.planets.forEach(planet => {
-            this.ctx.fillStyle = planet.color
+            this.ctx.fillStyle = planet.color.getRGB()
             this.ctx.beginPath()
             this.ctx.arc(planet.position.x+this.camera.x, planet.position.y+this.camera.y, planet.radius, 0, twoPi)
             this.ctx.fill()
         })
-
     }
 
     nextStep(): void {
@@ -48,16 +50,26 @@ export default class SpaceGravityEngine extends Engine2d {
                 const dx = other.position.x - planet.position.x
                 const dy = other.position.y - planet.position.y
                 const dist = Math.sqrt(dx*dx+dy*dy)
-                if (dist < (planet.radius + other.radius)) {
-                    planet.mass += other.mass
-                    planet.radius = this.calcRadius(planet.mass)
+
+                const touchDist = planet.radius + other.radius
+                let fx = 0
+                let fy = 0
+                let force = 1
+
+                if (dist < touchDist) {
+                    // Objects touch each other
                     planet.velocity.x = (planet.velocity.x * planet.mass + other.velocity.x * other.mass) / (planet.mass + other.mass)
                     planet.velocity.y = (planet.velocity.y * planet.mass + other.velocity.y * other.mass) / (planet.mass + other.mass)
-                    other.exists = false
+                    if (dist <= this.conf.glueDistance) {
+                        planet.color.glue(other.color, planet.mass / (planet.mass + other.mass))
+                        planet.mass += other.mass
+                        planet.radius = this.calcRadius(planet.mass)
+                        other.exists = false
+                    }
                 } else {
-                    const force = other.mass / (dist * dist)
-                    const fx = force * dx / dist
-                    const fy = force * dy / dist
+                    force = other.mass / (dist * dist)
+                    fx = force * dx / dist
+                    fy = force * dy / dist
                     planet.velocity.x += fx
                     planet.velocity.y += fy
                 }
@@ -77,7 +89,7 @@ export default class SpaceGravityEngine extends Engine2d {
     }
 
     calcRadius(mass: number): number {
-        return Math.pow(mass, 0.33)
+        return Math.pow(mass, 0.4)
     }
 
     reset(): void {
@@ -86,16 +98,16 @@ export default class SpaceGravityEngine extends Engine2d {
         const cnt = this.params.count!
         const maxX = this.params.size.x
         const maxY = this.params.size.y
-        const conf = this.params.conf as SpaceConf
-        const maxMass = conf.maxMass
+        this.conf = this.params.conf as SpaceConf
+        const maxMass = this.conf.maxMass
         for (let i=0; i<cnt; i++) {
-            const mass = Math.random() * maxMass
+            const mass = 1+Math.random() * maxMass
             this.planets.push({
                 position: {
                     x: Math.random() * maxX,
                     y: Math.random() * maxY,
                 },
-                color: `rgb(${Math.random()*100+155}, ${Math.random()*100+155}, ${Math.random()*100+155})`,
+                color:  new Color(Math.random()*200+55, Math.random()*200+55, Math.random()*200+55),
                 velocity: {x: 0, y: 0},
                 mass,
                 radius: this.calcRadius(mass),

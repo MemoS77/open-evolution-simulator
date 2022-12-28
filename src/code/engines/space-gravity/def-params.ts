@@ -7,6 +7,7 @@ const defParams: EngineParams = {
     infinityX: true,
     infinityY: true,
     conf: {
+        glueDistance: 3,
         maxMass: 10
     }
 }
