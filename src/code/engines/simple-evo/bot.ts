@@ -6,6 +6,7 @@ export default abstract class Bot {
     energy: number
     position: Point // Текущее положение
     id: string
+    lifeTime = 0
     protected readonly params: EvoParams
 
     constructor(position: Point,  params: EvoParams) {
@@ -17,10 +18,6 @@ export default abstract class Bot {
     }
 
     abstract init(): void
-
-    isChild(bot: Bot): boolean { // Является ли бот родителем или потомком или даже частью одного организма
-        return this.id === bot.id
-    }
 
     abstract getAction(cells?: Cell[][], bots?: CellBots): BotAction // Получить действие которое должен совершить бот
 

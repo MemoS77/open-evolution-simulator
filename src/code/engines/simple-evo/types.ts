@@ -14,6 +14,8 @@ export type EvoParams = {
     maxCellEnergy: number,
     // Максимально органики в клетке
     maxCellOrganic: number
+    // Максимальное время жизни бота
+    maxLifeTime: number
 }
 
 

@@ -7,6 +7,8 @@ import {ActionMode, CellMode, Direction} from "./enums"
 import Point from "../../types/point"
 import {BotAction, Cell, CellBots} from "./types"
 import FirstBot from "./first-bot"
+import {infoFont} from "../../inc/const"
+
 
 const drawCellSize = 16
 const padding = 1
@@ -16,6 +18,7 @@ export default class SimpleEvo extends Engine2d {
     bots: Bot[] = []
     cells: Cell[][] = []
     params: EvoEngineParams
+    private cycle = 0
 
 
     override centerCamera() {
@@ -57,6 +60,10 @@ export default class SimpleEvo extends Engine2d {
 
             }
         }
+
+        this.ctx.fillStyle = "Gray"
+        this.ctx.font      = infoFont
+        this.ctx.fillText(this.cycle+ " cycle", 10, 56)
     }
 
     getInfo(): EngineInfo {
@@ -151,9 +158,11 @@ export default class SimpleEvo extends Engine2d {
         const bots = this.getCellBots()
         this.bots.forEach(b => {
             b.energy--
+            b.lifeTime++
             this.doBotAction(b, b.getAction(this.cells, bots))
         })
         this.bots.forEach(b => {
+            if (b.lifeTime >= this.params!.conf.maxLifeTime) b.energy = 0
             if (b.energy <= 0) {
                 this.cells[b.position.x][b.position.y].organic += this.params!.conf.deathBotEnergy
                 if (this.cells[b.position.x][b.position.y].organic> this.params!.conf.maxCellOrganic) {
@@ -164,6 +173,7 @@ export default class SimpleEvo extends Engine2d {
             }
         })
         this.bots = this.bots.filter(b => b.energy > 0)
+        this.cycle++
     }
 
     reset(): void {
@@ -219,9 +229,10 @@ export default class SimpleEvo extends Engine2d {
         const halfX1 = Math.floor(this.params!.size.x/2)-1
         const halfX2 = halfX1+3
         const halfY = Math.floor(this.params!.size.y/2)
+        const maxY=this.params!.size.y
         for (let i=0; i<this.params!.size.x; i++) {
             this.cells[i] = []
-            for (let j=0; j<this.params!.size.y; j++) {
+            for (let j=0; j<maxY; j++) {
                 this.cells[i][j] = {
                     mode: CellMode.Empty,
                     energy: 0,
@@ -230,12 +241,8 @@ export default class SimpleEvo extends Engine2d {
                 this.cells[i][j].mode = (i>=halfX1 && i<=halfX2)
                     ? j<halfY ? CellMode.UnbreakableBarrier : CellMode.BreakableBarrier
                     : CellMode.Empty
-                if ((this.cells[i][j].mode === CellMode.Empty)&&(Math.random()<0.2)) {
-                    if (j<halfY) {
-                        this.cells[i][j].energy = Math.ceil(Math.random() * this.params!.conf.maxCellEnergy)
-                    }   else {
-                        this.cells[i][j].organic = Math.ceil(Math.random() * this.params!.conf.maxCellOrganic)
-                    }
+                if ((this.cells[i][j].mode === CellMode.Empty)&&(Math.random()<0.3)) {
+                    this.cells[i][j].energy = Math.round((maxY-j)/maxY * this.params!.conf.maxCellEnergy)
                 }
             }
         }
