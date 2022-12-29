@@ -8,7 +8,7 @@ import Point from "../../types/point"
 import {BotAction, Cell, CellBots} from "./types"
 import FirstBot from "./first-bot"
 
-const drawCellSize = 12
+const drawCellSize = 16
 const padding = 1
 const innerCellSize = drawCellSize - padding * 2
 

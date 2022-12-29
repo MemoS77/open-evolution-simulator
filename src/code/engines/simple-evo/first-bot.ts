@@ -5,9 +5,8 @@ import {randomInt} from "../../funcs/buttons"
 import applyDirection from "./apply-direction"
 import Point from "../../types/point"
 
-const genomeLength = 20
-const lastCommand = 30
-const maxCommand = lastCommand+genomeLength
+const genomeLength = 100
+const maxCommand = 34
 const maxSteps = 100
 
 
@@ -21,7 +20,7 @@ export default class FirstBot extends Bot {
      *
      */
     gid(n: number): number {
-        return n % genomeLength
+        return Math.abs(n % this.genome.length)
     }
 
     getDirection(pos: number): Direction {
@@ -52,6 +51,8 @@ export default class FirstBot extends Bot {
         let rx = 0
         let ry = 0
 
+        console.log(this.energy)
+
         do {
             step++
             if (step > maxSteps)  action = {
@@ -63,6 +64,9 @@ export default class FirstBot extends Bot {
                 const cell = cells[currentCell.x][currentCell.y]
                 const bot = bots[currentCell.x][currentCell.y]
 
+
+                console.log(this.current, c, `rx=${rx} ry=${ry}`)
+
                 switch (c) {
                 case 0:
                 case 1:
@@ -70,6 +74,7 @@ export default class FirstBot extends Bot {
                 case 3:
                 case 4:
                     d = c
+                    currentCell = applyDirection(this.position, d, borders)
                     break
                 case 5:
                     action = {
@@ -101,6 +106,7 @@ export default class FirstBot extends Bot {
                     break
                 case 11:
                     rx--
+                    if (rx<0) rx = 0
                     break
                 case 12:
                     this.incCurrent()
@@ -109,6 +115,7 @@ export default class FirstBot extends Bot {
                 case 13:
                     if (bot.id || cell.mode !== CellMode.Empty)  rx = 0
                     else {
+                        console.log("organic", cell.organic)
                         if (cell.organic>0 || cell.energy>0) rx = 2
                         else rx = 1
                     }
@@ -147,41 +154,50 @@ export default class FirstBot extends Bot {
                     if (ry<0) ry = 0
                     break
                 case 21:
-                    if (rx===0) this.incCurrent()
+                    if (!(rx===0)) this.incCurrent()
                     break
                 case 22:
-                    if (rx>0) this.incCurrent()
+                    if (!(rx>0)) this.incCurrent()
                     break
                 case 23:
-                    if (rx>1) this.incCurrent()
+                    if (!(rx>1)) this.incCurrent()
                     break
                 case 24:
-                    if (rx===ry) this.incCurrent()
+                    if (!(rx===ry)) this.incCurrent()
                     break
                 case 25:
-                    if (rx>ry) this.incCurrent()
+                    if (!(rx>ry)) this.incCurrent()
                     break
                 case 26:
-                    if (rx<ry) this.incCurrent()
+                    if (!(rx<ry)) this.incCurrent()
                     break
                 case 27:
-                    currentCell = applyDirection(currentCell, d, borders)
+                    currentCell = applyDirection(this.position, d, borders, 2)
                     break
                 case 28:
-                    currentCell = applyDirection(currentCell, d, borders, rx)
+                    currentCell = applyDirection(this.position, d, borders, rx)
                     break
                 case 29:
                     d = rx%5
                     break
                 case 30:
-                    d = randomInt(0, 4)
+                    rx = randomInt(0, 4)
                     break
-                default:
-                    this.current = this.gid(this.current+c-lastCommand)
+                case 31:
+                    rx = this.params.energyForReproduction
+                    break
+                case 32:
+                    rx = bot.id ? bot.energy : 0
+                    break
+                case 33:
+                    this.current = this.gid(this.current + rx)
+                    break
+                case 34:
+                    this.current = this.gid(this.current - rx - 2)
                     break
                 }
             }
-            this.current = this.gid(this.current+1)
+            this.incCurrent()
         } while (action === null)
 
         return action
@@ -189,7 +205,11 @@ export default class FirstBot extends Bot {
 
     init(): void {
         this.genome = []
-        for (let i = 0; i < genomeLength; i++) {
+        this.genome = [0, 16, 22, 6, 30, 29, 5] // Простейший поедальщик минералов
+        //this.genome = [0,17,23,6,9,5,34,32,18,31,1,25,7,30,29,5]
+        //this.genome = [0,17,23,6,9,5,34,32,18,31,1,25,7,30,29,5]
+
+        for (let i =  this.genome.length; i < genomeLength; i++) {
             this.genome.push(randomInt(0, maxCommand))
         }
         console.log(this.id, this.genome)

@@ -8,10 +8,10 @@ export interface EvoEngineParams extends EngineParams {
 
 const paramsList: EvoEngineParams[] = [{
     name: "Basic Field",
-    size: {x: 100, y: 70},
-    count: 1,
+    size: {x: 60, y: 40},
+    count: 40,
     conf: {
-        defaultEnergy: 80,
+        defaultEnergy: 90,
         energyForReproduction: 100,
         maxBotEnergy: 400,
         deathBotEnergy: 30,

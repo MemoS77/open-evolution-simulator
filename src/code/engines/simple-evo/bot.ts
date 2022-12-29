@@ -6,7 +6,7 @@ export default abstract class Bot {
     energy: number
     position: Point // Текущее положение
     id: string
-    private readonly params: EvoParams
+    protected readonly params: EvoParams
 
     constructor(position: Point,  params: EvoParams) {
         this.position = position
