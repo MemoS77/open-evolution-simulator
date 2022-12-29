@@ -16,7 +16,7 @@ export class RandomBot extends Bot  {
         //
     }
 
-    mutate(): void {
-        //
+    mutate(): boolean {
+        return false
     }
 }

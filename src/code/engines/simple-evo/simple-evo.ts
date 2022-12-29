@@ -64,6 +64,19 @@ export default class SimpleEvo extends Engine2d {
         this.ctx.fillStyle = "Gray"
         this.ctx.font      = infoFont
         this.ctx.fillText(this.cycle+ " cycle", 10, 56)
+
+
+        let maxGeneration = 0
+        let maxMutations = 0
+
+        this.bots.forEach(b => {
+            if (b.mutations > maxMutations) maxMutations = b.mutations
+            if (b.generation > maxGeneration) maxGeneration = b.generation
+        })
+
+        this.ctx.fillText("Max generation: " + maxGeneration, 10, 76)
+        this.ctx.fillText("Max mutations: " + maxMutations, 10, 96)
+
     }
 
     getInfo(): EngineInfo {
@@ -103,7 +116,7 @@ export default class SimpleEvo extends Engine2d {
 
             if (cell.mode !== CellMode.UnbreakableBarrier) {
 
-                const energy = Math.floor(bot.energy/2)
+                const energy = Math.floor(bot.energy/3)
                 switch (action.mode) {
                 case ActionMode.Transfer:
                     if (action.direction !== Direction.Stay) {
@@ -123,6 +136,7 @@ export default class SimpleEvo extends Engine2d {
                     if ((action.direction !== Direction.Stay) && targetBot) {
                         // Атака
                         targetBot.energy -= energy
+                        //if (targetBot.energy) console.log(targetBot.id,'kileed by',bot.id)
                     } else if (cell.mode === CellMode.BreakableBarrier) {
                         // Разрушение барьера
                         this.cells[x][y].mode = CellMode.Empty
@@ -130,11 +144,8 @@ export default class SimpleEvo extends Engine2d {
                         if (cell.organic>0) {
                             // Съедание органики
                             const e = Math.min(cell.organic, energy)
-                            //console.log("eat", e)
                             bot.energy += e
                             cell.organic -= e
-                        } else {
-                            bot.energy += cell.energy
                         }
                     }
                     break
@@ -156,9 +167,12 @@ export default class SimpleEvo extends Engine2d {
     nextStep(): void {
         // Для оптимизации, получаем список ботов в ячейках, чтобы не искать каждый проход
         const bots = this.getCellBots()
+
         this.bots.forEach(b => {
             b.energy--
             b.lifeTime++
+            const cell = this.cells[b.position.x][b.position.y]
+            if (cell.energy>0) b.energy+=cell.energy
             this.doBotAction(b, b.getAction(this.cells, bots))
         })
         this.bots.forEach(b => {
@@ -171,6 +185,8 @@ export default class SimpleEvo extends Engine2d {
             } else if (b.energy>this.params!.conf.maxBotEnergy) {
                 b.energy = this.params!.conf.maxBotEnergy
             }
+
+
         })
         this.bots = this.bots.filter(b => b.energy > 0)
         this.cycle++
@@ -241,7 +257,7 @@ export default class SimpleEvo extends Engine2d {
                 this.cells[i][j].mode = (i>=halfX1 && i<=halfX2)
                     ? j<halfY ? CellMode.UnbreakableBarrier : CellMode.BreakableBarrier
                     : CellMode.Empty
-                if ((this.cells[i][j].mode === CellMode.Empty)&&(Math.random()<0.3)) {
+                if ((this.cells[i][j].mode === CellMode.Empty)&&(Math.random()<0.5)) {
                     this.cells[i][j].energy = Math.round((maxY-j)/maxY * this.params!.conf.maxCellEnergy)
                 }
             }

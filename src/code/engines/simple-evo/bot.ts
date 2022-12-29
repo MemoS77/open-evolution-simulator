@@ -7,6 +7,9 @@ export default abstract class Bot {
     position: Point // Текущее положение
     id: string
     lifeTime = 0
+    generation = 0
+    mutations = 0
+
     protected readonly params: EvoParams
 
     constructor(position: Point,  params: EvoParams) {
@@ -26,9 +29,11 @@ export default abstract class Bot {
         const newBot =  new (this.constructor as any)(position, this.params)
         newBot.id = this.id
         newBot.energy = this.energy
-        newBot.mutate()
+        newBot.generation = this.generation + 1
+        newBot.mutations = this.mutations
+        if (newBot.mutate()) newBot.mutations++
         return newBot
     }
 
-    abstract mutate(): void // Попытка мутации
+    abstract mutate(): boolean // Попытка мутации
 }

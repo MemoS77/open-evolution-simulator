@@ -225,14 +225,18 @@ export default class FirstBot extends Bot {
 
     }
 
-    mutate(): void {
+    mutate(): boolean {
+        let wasMutated = false
         for (let i =  0; i < this.genome.length; i++) {
             if (Math.random()<0.001) {
                 this.genome[i] = randomInt(0, maxCommand)
                 const newId = uiid()
                 console.log("Mutation!", this.id, newId)
+                wasMutated = true
                 this.id = newId
+                break
             }
         }
+        return wasMutated
     }
 }
