@@ -232,7 +232,7 @@ export default class FirstBot extends Bot {
             if (Math.random()<0.005) {
                 this.genome[i] = randomInt(0, maxCommand)
                 mutations++
-                if ((mutations+this.mutations)%5 === 0) {
+                if ((mutations+this.mutations)%7 === 0) {
                     const newId = uiid()
                     console.log("Many mutations", this.id, newId)
                     this.id = newId

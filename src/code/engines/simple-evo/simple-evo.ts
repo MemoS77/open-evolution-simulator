@@ -48,9 +48,7 @@ export default class SimpleEvo extends Engine2d {
                         this.ctx.fillStyle = `rgb(20,${green},${blue})`
                     } else
                     {
-                        const green = c.energy > 0 ? 40 : 20
-                        const blue = c.organic > 0 ? 40 : 20
-                        this.ctx.fillStyle = `rgb(20,${green},${blue})`
+                        this.ctx.fillStyle = "rgb(0,0,0)"
                     }
                 }
                 const cx = i * drawCellSize + this.camera.x + padding
@@ -64,9 +62,14 @@ export default class SimpleEvo extends Engine2d {
                         this.ctx.fillStyle = `rgba(${red},0,0,0.8)`
                     } else if (globalVars.showMode === 1) {
                         this.ctx.fillStyle = "#"+bot.id.slice(0, 6)
-                    } else {
-                        const v = 255-Math.floor(bot.lifeTime / this.params!.conf.maxLifeTime * 200)
+                    } else if (globalVars.showMode === 2) {
+                        const v = 255 - Math.floor(bot.lifeTime / this.params!.conf.maxLifeTime * 200)
                         this.ctx.fillStyle = `rgb(${v},${v},${v})`
+                    }
+                    else {
+                        const g = 255-Math.floor(bot.lifeTime / this.params!.conf.maxLifeTime * 220)
+                        const r = 255-Math.floor(bot.energy / this.params!.conf.maxBotEnergy * 220)
+                        this.ctx.fillStyle = `rgb(${r},${g},220)`
                     }
                     this.ctx.fillRect(cx, cy, innerCellSize, innerCellSize)
                 }
