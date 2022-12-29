@@ -1,10 +1,9 @@
 import Point from "./types/point"
 import {drawFPS} from "./funcs/fps"
 import {getCanvasCont, setEnginesList, setParamsList} from "./funcs/dom"
-import {bindPauseButton, bindResetButton, bindStartButton} from "./funcs/buttons"
+import {bindPauseButton, bindResetButton, bindStartButton, bindStepButton} from "./funcs/buttons"
 import EngineState from "./enums/engine-state"
 import Engine from "./engines/engine"
-import getFields from "./funcs/get-fields"
 import engines from "./engines"
 
 export default class App {
@@ -28,10 +27,9 @@ export default class App {
     onEngineSelect(index: string | number) {
         this.reset()
         this.engine = engines[+index]
-        const info = this.engine.getInfo()
-        const fields = getFields(info.id, info.version)
-        this.engine.init(this.canvas, fields.length ? fields[0] : null)
-        setParamsList(this.engine)
+        //const info = this.engine.getInfo()
+        const params = setParamsList(this.engine)
+        this.engine.init(this.canvas, params.length ? params[0] : null)
         this.engine.clear()
     }
 
@@ -54,6 +52,10 @@ export default class App {
         bindStartButton(() => this.start())
         bindResetButton(() => this.reset())
         bindPauseButton(() => this.pause())
+        bindStepButton(() => {
+            this.engine.nextStep()
+            this.engine.draw()
+        })
 
         const select = document.getElementById("engines-list")! as HTMLSelectElement
         select.addEventListener("change", (e) => this.onEngineSelect((e.target as HTMLOptionElement).value))
