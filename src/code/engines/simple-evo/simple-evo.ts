@@ -67,9 +67,10 @@ export default class SimpleEvo extends Engine2d {
                         this.ctx.fillStyle = `rgb(${v},${v},${v})`
                     }
                     else {
-                        const g = 255-Math.floor(bot.lifeTime / this.params!.conf.maxLifeTime * 220)
-                        const r = 255-Math.floor(bot.energy / this.params!.conf.maxBotEnergy * 220)
-                        this.ctx.fillStyle = `rgb(${r},${g},220)`
+                        // Чем моложе и больше энергии, тем ярче
+                        const g = 250-Math.floor(bot.lifeTime / this.params!.conf.maxLifeTime * 250)
+                        const r = Math.floor(bot.energy / this.params!.conf.maxBotEnergy * 250)
+                        this.ctx.fillStyle = `rgb(${r},${g},100)`
                     }
                     this.ctx.fillRect(cx, cy, innerCellSize, innerCellSize)
                 }
