@@ -15,4 +15,8 @@ export class RandomBot extends Bot  {
     init(): void {
         //
     }
+
+    mutate(): void {
+        //
+    }
 }

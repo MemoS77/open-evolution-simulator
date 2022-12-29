@@ -27,9 +27,11 @@ export default abstract class Bot {
     reproduction(position: Point): Bot {
         this.energy = Math.floor(this.energy / 2)
         const newBot =  new (this.constructor as any)(position, this.params)
-        console.log("reproduction", newBot)
         newBot.id = this.id
         newBot.energy = this.energy
+        newBot.mutate()
         return newBot
     }
+
+    abstract mutate(): void // Попытка мутации
 }

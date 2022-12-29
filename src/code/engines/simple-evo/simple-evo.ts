@@ -99,7 +99,7 @@ export default class SimpleEvo extends Engine2d {
                 const energy = Math.floor(bot.energy/2)
                 switch (action.mode) {
                 case ActionMode.Transfer:
-                    if (action.direction === Direction.Stay) bot.energy -= energy; else {
+                    if (action.direction !== Direction.Stay) {
                         if (targetBot) {
                             // Передача энергии
                             targetBot.energy += energy
