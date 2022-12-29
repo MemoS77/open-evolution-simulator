@@ -1,20 +1,20 @@
 import Bot from "./bot"
 import {ActionMode, CellMode, Direction} from "./enums"
-import {BotAction, Cell} from "./types"
+import {BotAction, Cell, CellBots} from "./types"
 import {randomInt} from "../../funcs/buttons"
+import applyDirection from "./apply-direction"
+import Point from "../../types/point"
 
-const genomeLength = 30
+const genomeLength = 20
+const lastCommand = 30
+const maxCommand = lastCommand+genomeLength
 const maxSteps = 100
 
 
 export default class FirstBot extends Bot {
 
     private genome: number[]
-
-    isRelated(): boolean {
-        return false
-    }
-
+    private current = 0
 
     /**
      * Получить действие которое должен совершить бот
@@ -28,13 +28,29 @@ export default class FirstBot extends Bot {
         return this.gid(pos+1)%5
     }
 
-    getAction(cells: Cell[][], bots: Bot[]): BotAction {
-        let step = 0
-        let current = 0
-        let action: BotAction | null = null
-        const sizeX = cells.length
-        const sizeY = cells[0].length
+    getG() {
+        return this.genome[this.current]
+    }
 
+    private incCurrent(): void {
+        this.current = this.gid(this.current + 1)
+    }
+
+
+
+    getAction(cells: Cell[][], bots: CellBots): BotAction {
+        let step = 0
+        let action: BotAction | null = null
+        const borders: Point = {
+            x: cells.length,
+            y: cells[0].length
+        }
+
+
+        let currentCell = {...this.position}
+        let d: Direction = Direction.Stay
+        let rx = 0
+        let ry = 0
 
         do {
             step++
@@ -43,71 +59,129 @@ export default class FirstBot extends Bot {
                 mode: ActionMode.Move
             }
             else {
-                const c = this.genome[current]
+                const c = this.getG()
+                const cell = cells[currentCell.x][currentCell.y]
+                const bot = bots[currentCell.x][currentCell.y]
+
                 switch (c) {
                 case 0:
-                    current = this.gid(current+1)
-                    break
                 case 1:
+                case 2:
+                case 3:
+                case 4:
+                    d = c
+                    break
+                case 5:
                     action = {
-                        direction: this.getDirection(current+1),
+                        direction: d,
                         mode: ActionMode.Move
                     }
                     break
-                case 2:
+                case 6:
                     action = {
-                        direction: this.getDirection(current+1),
+                        direction: d,
                         mode: ActionMode.Use
                     }
                     break
-                case 3:
+                case 7:
                     action = {
-                        direction: this.getDirection(current+1),
+                        direction: d,
                         mode: ActionMode.Transfer
                     }
                     break
-                case 4:
-                    const direction = this.genome[this.gid(current+1)]%5
-                    let x = this.position.x
-                    let y = this.position.y
-                    switch (direction) {
-                    case Direction.Up:
-                        y--
-                        break
-                    case Direction.Down:
-                        y++
-                        break
-                    case Direction.Left:
-                        x--
-                        break
-                    case Direction.Right:
-                        x++
-                        break
+                case 8:
+                    rx = 0
+                    break
+                case 9:
+                    this.incCurrent()
+                    rx = this.getG()
+                    break
+                case 10:
+                    rx++
+                    break
+                case 11:
+                    rx--
+                    break
+                case 12:
+                    this.incCurrent()
+                    rx+=this.getG()
+                    break
+                case 13:
+                    if (bot.id || cell.mode !== CellMode.Empty)  rx = 0
+                    else {
+                        if (cell.organic>0 || cell.energy>0) rx = 2
+                        else rx = 1
                     }
-                    let next = 1
-                    if (x >= 0 && x < sizeX && y >= 0 && y < sizeY) {
-                        const mode = cells[x][y].mode
-                        if (mode === CellMode.UnbreakableBarrier) next = 1
-                        else if (mode === CellMode.BreakableBarrier) next = 4
-                        else if (mode === CellMode.Empty) {
-                            const bot = bots.find(b => b.position.x === x && b.position.y === y)
-                            if (bot) {
-                                if (bot.isChild(this)) next = 6
-                                if (bot.isRelated(this)) next = 7
-                                else next = 5
-                            } else {
-                                if ((cells[x][y].energy > 0) || (cells[x][y].organic > 0)) next = 2
-                                else next = 3
-                            }
-                        }
+                    break
+                case 14:
+                    if (bot.id) {
+                        if (bot.id === this.id) rx = 2
+                        else rx = 1
+                    } else rx = 0
+                    break
+                case 15:
+                    rx = cell.mode
+                    break
+                case 16:
+                    if (cell.mode !== CellMode.Empty) rx = 0
+                    else {
+                        if (cell.organic>30) rx = 2  // TODO: Вынести константу, что считается много
+                        else rx = 1
                     }
-                    current = this.gid(current+next)
+                    break
+                case 17:
+                    if (cell.mode !== CellMode.Empty) rx = 0
+                    else {
+                        if (cell.energy>1) rx = 2  // TODO: Вынести константу, что считается много
+                        else rx = 1
+                    }
+                    break
+                case 18:
+                    ry = rx
+                    break
+                case 19:
+                    ry+=rx
+                    break
+                case 20:
+                    ry-=rx
+                    if (ry<0) ry = 0
+                    break
+                case 21:
+                    if (rx===0) this.incCurrent()
+                    break
+                case 22:
+                    if (rx>0) this.incCurrent()
+                    break
+                case 23:
+                    if (rx>1) this.incCurrent()
+                    break
+                case 24:
+                    if (rx===ry) this.incCurrent()
+                    break
+                case 25:
+                    if (rx>ry) this.incCurrent()
+                    break
+                case 26:
+                    if (rx<ry) this.incCurrent()
+                    break
+                case 27:
+                    currentCell = applyDirection(currentCell, d, borders)
+                    break
+                case 28:
+                    currentCell = applyDirection(currentCell, d, borders, rx)
+                    break
+                case 29:
+                    d = rx%5
+                    break
+                case 30:
+                    d = randomInt(0, 4)
                     break
                 default:
-                    current = this.gid(current+c)
+                    this.current = this.gid(this.current+c-lastCommand)
                     break
                 }
             }
+            this.current = this.gid(this.current+1)
         } while (action === null)
 
         return action
@@ -116,7 +190,9 @@ export default class FirstBot extends Bot {
     init(): void {
         this.genome = []
         for (let i = 0; i < genomeLength; i++) {
-            this.genome.push(randomInt(0, genomeLength-1))
+            this.genome.push(randomInt(0, maxCommand))
         }
+        console.log(this.id, this.genome)
+
     }
 }

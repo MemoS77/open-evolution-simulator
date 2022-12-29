@@ -5,7 +5,7 @@ import paramsList, {EvoEngineParams} from "./params-list"
 import Bot from "./bot"
 import {ActionMode, CellMode, Direction} from "./enums"
 import Point from "../../types/point"
-import {BotAction, Cell} from "./types"
+import {BotAction, Cell, CellBots} from "./types"
 import FirstBot from "./first-bot"
 
 const drawCellSize = 12
@@ -123,7 +123,7 @@ export default class SimpleEvo extends Engine2d {
                         if (cell.organic>0) {
                             // Съедание органики
                             const e = Math.min(cell.organic, energy)
-                            console.log("eat", e)
+                            //console.log("eat", e)
                             bot.energy += e
                             cell.organic -= e
                         } else {
@@ -147,9 +147,11 @@ export default class SimpleEvo extends Engine2d {
     }
 
     nextStep(): void {
+        // Для оптимизации, получаем список ботов в ячейках, чтобы не искать каждый проход
+        const bots = this.getCellBots()
         this.bots.forEach(b => {
             b.energy--
-            this.doBotAction(b, b.getAction(this.cells, this.bots))
+            this.doBotAction(b, b.getAction(this.cells, bots))
         })
         this.bots.forEach(b => {
             if (b.energy <= 0) {
@@ -186,6 +188,30 @@ export default class SimpleEvo extends Engine2d {
             this.addBot(new FirstBot(p, this.params!.conf))
         }
     }
+
+
+    private getCellBots(): CellBots {
+        const cells: CellBots = []
+        for (let i=0; i<this.params!.size.x; i++) {
+            cells[i] = []
+            for (let j = 0; j < this.params!.size.y; j++) {
+                cells[i][j] = {
+                    id: false,
+                    energy: 0,
+                }
+            }
+        }
+
+        this.bots.forEach(b => {
+            cells[b.position.x][b.position.y] = {
+                id: b.id,
+                energy: b.energy,
+            }
+        })
+
+        return cells
+    }
+
 
     private initCells() {
         this.cells = []

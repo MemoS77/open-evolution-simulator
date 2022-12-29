@@ -33,3 +33,10 @@ export type BotAction = {
     mode: ActionMode
 }
 
+export type CellBot = {
+    id: string | false,
+    energy: number,
+}
+
+export type CellBots = Array<Array<CellBot>>
+

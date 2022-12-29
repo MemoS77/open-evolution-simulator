@@ -5,10 +5,6 @@ import {randomInt} from "../../funcs/buttons"
 
 export class RandomBot extends Bot  {
 
-    isRelated(): boolean {
-        return false
-    }
-
     getAction(): BotAction {
         return {
             direction: randomInt(0, Object.keys(Direction).length-1),
