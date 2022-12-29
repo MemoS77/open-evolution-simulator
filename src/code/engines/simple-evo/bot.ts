@@ -31,9 +31,9 @@ export default abstract class Bot {
         newBot.energy = this.energy
         newBot.generation = this.generation + 1
         newBot.mutations = this.mutations
-        if (newBot.mutate()) newBot.mutations++
+        newBot.mutations+=newBot.copyGenome(this)
         return newBot
     }
 
-    abstract mutate(): boolean // Попытка мутации
+    abstract copyGenome(parentBot: Bot): number // Копировать геном. Вернуть количество мутаций
 }
