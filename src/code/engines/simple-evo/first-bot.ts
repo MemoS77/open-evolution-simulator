@@ -1,19 +1,23 @@
 import Bot from "./bot"
 import {ActionMode, CellMode, Direction} from "./enums"
-import {BotAction, Cell, CellBots} from "./types"
+import {BotAction, Cell, CellBot, CellBots} from "./types"
 import {randomInt} from "../../funcs/buttons"
 import applyDirection from "./apply-direction"
 import Point from "../../types/point"
-import uiid from "../../funcs/uiid"
+import {bestGenomes} from "./best-first-genomes"
 
-const genomeLength = 80
-const maxCommand = 34
+
+const genomeLength = 160
+const maxCommand = 36
 const maxSteps = 100
+const maxDiff = 2
+
+
 
 
 export default class FirstBot extends Bot {
 
-    private genome: number[]
+    genome: number[]
     private current = 0
 
     /**
@@ -35,6 +39,17 @@ export default class FirstBot extends Bot {
 
     private incCurrent(count = 1): void {
         this.current = this.gid(this.current + count)
+    }
+
+    isRelative(bot: CellBot): boolean {
+
+        let d = 0
+
+        for (let i = 0; i < this.genome.length; i++) {
+            if (this.genome[i]!==bot.genome![i]) d++
+        }
+
+        return d <= maxDiff
     }
 
 
@@ -124,7 +139,7 @@ export default class FirstBot extends Bot {
                     break
                 case 14:
                     if (bot.id) {
-                        if (bot.id === this.id) rx = 2
+                        if (this.isRelative(bot)) rx = 2
                         else rx = 1
                     } else rx = 0
                     break
@@ -202,6 +217,12 @@ export default class FirstBot extends Bot {
                     this.current = this.gid(this.current - this.getG()-1)
                     //console.log('to',this.current)
                     break
+                case 35:
+                    rx = this.params.maxLifeTime
+                    break
+                case 36:
+                    rx = bot.id ? bot.lifeTime : 0
+                    break
                 }
             }
             this.incCurrent()
@@ -214,29 +235,43 @@ export default class FirstBot extends Bot {
 
     init(): void {
         this.genome = []
-        //this.genome = [0, 16, 22, 6, 30, 29, 5] // Простейший поедальщик минералов
-        this.genome = [3, 7, 0, 6, 17, 23, 34, 7, 30, 29, 5] // Поедальщик энергии и размножение
 
-
-        for (let i =  this.genome.length; i < genomeLength; i++) {
-            this.genome.push(randomInt(0, maxCommand))
+        if (Math.random() < 0.5) {
+            for (let i = this.genome.length; i < genomeLength; i++) {
+                this.genome.push(randomInt(0, maxCommand))
+            }
+        } else {
+            const i = randomInt(0, bestGenomes.length - 1)
+            this.genome = [...bestGenomes[i]]
+            this.calcID()
         }
-        //console.log(this.id, this.genome)
+    }
 
+    calcID() {
+        let n = 0
+        let d = 0
+        const ln = this.genome.length -1
+        for (let i = 0; i <= ln; i++) {
+            const g = this.genome[i]
+            if ((g>=5)&&(g<=7)) d++
+            n += g * this.genome[ln-i]
+        }
+        this.id = Math.round(n/ln)+d*360
     }
 
     copyGenome(parentBot: FirstBot): number {
         this.genome = [...parentBot.genome]
         let mutations = 0
+
+        // Для возожности сохранить геном для последующих экспериментов. Показываем только часто-встречающиеся геномы
+        //if (lastGenomeCopy === this.id) console.log(this.id,JSON.stringify(this.genome))
+        //lastGenomeCopy = this.id
+
         for (let i =  0; i < this.genome.length; i++) {
             if (Math.random()<0.005) {
                 this.genome[i] = randomInt(0, maxCommand)
                 mutations++
-                if ((mutations+this.mutations)%7 === 0) {
-                    const newId = uiid()
-                    console.log("Many mutations", this.id, newId)
-                    this.id = newId
-                }
+                this.calcID()
             }
         }
         return mutations
