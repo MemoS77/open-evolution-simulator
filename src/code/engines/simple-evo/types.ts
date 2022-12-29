@@ -36,8 +36,10 @@ export type BotAction = {
 }
 
 export type CellBot = {
-    id: string | false,
+    id: number | false,
     energy: number,
+    lifeTime: number,
+    genome?: number[],
 }
 
 export type CellBots = Array<Array<CellBot>>

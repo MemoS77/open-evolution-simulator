@@ -61,7 +61,7 @@ export default class SimpleEvo extends Engine2d {
                         const red = Math.floor((bot.energy + def) / (def + this.params!.conf.maxBotEnergy) * 255)
                         this.ctx.fillStyle = `rgba(${red},0,0,0.8)`
                     } else if (globalVars.showMode === 1) {
-                        this.ctx.fillStyle = "#"+bot.id.slice(0, 6)
+                        this.ctx.fillStyle = "hsl(" + bot.id + " 100% 50%)"
                     } else if (globalVars.showMode === 2) {
                         const v = 255 - Math.floor(bot.lifeTime / this.params!.conf.maxLifeTime * 200)
                         this.ctx.fillStyle = `rgb(${v},${v},${v})`
@@ -78,23 +78,51 @@ export default class SimpleEvo extends Engine2d {
             }
         }
 
-        this.ctx.fillStyle = "Gray"
-        this.ctx.font      = infoFont
-        this.ctx.fillText(this.cycle+ " cycle", 10, 56)
 
 
+        this.drawStats()
+    }
+
+    drawStats(): void {
         let maxGeneration = 0
         let maxMutations = 0
 
-        this.bots.forEach(b => {
-            if (b.mutations > maxMutations) maxMutations = b.mutations
-            if (b.generation > maxGeneration) maxGeneration = b.generation
-        })
+        // Посчитать количество ботов группируя по id
+        const botsCount: {[key: number]: number} = {}
+        for (const bot of this.bots) {
+            if (!botsCount[bot.id]) {
+                botsCount[bot.id] = 0
+            }
+            botsCount[bot.id]++
+            if (bot.generation > maxGeneration) {
+                maxGeneration = bot.generation
+            }
+            if (bot.mutations > maxMutations) {
+                maxMutations = bot.mutations
+            }
+        }
 
+        // Вывести геном 3 самых популярных ботов
+        if (this.cycle % 1500 === 0) {
+            const sortedBots = Object.entries(botsCount).sort((a, b) => b[1] - a[1])
+            for (let i = 0; i < 3; i++) {
+                const botId = sortedBots[i][0]
+                const bot = this.bots.find(b => b.id === Number(botId)) as FirstBot
+                console.log(bot.id, "x" + botsCount[bot.id], JSON.stringify(bot.genome))
+            }
+        }
+
+
+        this.ctx.fillStyle = "Gray"
+        this.ctx.font      = infoFont
+        this.ctx.fillText(this.cycle+ " cycle", 10, 56)
         this.ctx.fillText("Max generation: " + maxGeneration, 10, 76)
         this.ctx.fillText("Max mutations: " + maxMutations, 10, 96)
-
+        // Total bots
+        this.ctx.fillText("Total bots: " + this.bots.length, 10, 116)
     }
+
+
 
     getInfo(): EngineInfo {
         return {
@@ -244,6 +272,8 @@ export default class SimpleEvo extends Engine2d {
                 cells[i][j] = {
                     id: false,
                     energy: 0,
+                    lifeTime: 0,
+
                 }
             }
         }
@@ -252,6 +282,8 @@ export default class SimpleEvo extends Engine2d {
             cells[b.position.x][b.position.y] = {
                 id: b.id,
                 energy: b.energy,
+                lifeTime: b.lifeTime,
+                genome: (b as FirstBot).genome,
             }
         })
 
@@ -278,8 +310,8 @@ export default class SimpleEvo extends Engine2d {
     private initCells() {
         this.cells = []
 
-        const halfX1 = Math.floor(this.params!.size.x/2)-2
-        const halfX2 = halfX1+4
+        const t  = Math.round(this.params!.size.x / 3)
+
         const halfY = Math.floor(this.params!.size.y/2)
         const maxY=this.params!.size.y
         for (let i=0; i<this.params!.size.x; i++) {
@@ -290,7 +322,7 @@ export default class SimpleEvo extends Engine2d {
                     energy: 0,
                     organic: 0
                 }
-                this.cells[i][j].mode = (i>=halfX1 && i<=halfX2)
+                this.cells[i][j].mode = (i%t === Math.round(t/2))
                     ? (j<halfY/0.8) && (j>halfY) ? CellMode.BreakableBarrier : CellMode.UnbreakableBarrier
                     : CellMode.Empty
                 if ((this.cells[i][j].mode === CellMode.Empty)&&(Math.random()<0.2)) {

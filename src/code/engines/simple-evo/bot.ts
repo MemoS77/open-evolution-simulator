@@ -1,11 +1,11 @@
 import {BotAction, Cell, CellBots, EvoParams} from "./types"
 import Point from "../../types/point"
-import uiid from "../../funcs/uiid"
+import {randID} from "./funcs"
 
 export default abstract class Bot {
     energy: number
     position: Point // Текущее положение
-    id: string
+    id: number
     lifeTime = 0
     generation = 0
     mutations = 0
@@ -16,7 +16,7 @@ export default abstract class Bot {
         this.position = position
         this.energy = params.defaultEnergy
         this.params = params
-        this.id = uiid()
+        this.id = randID()
         this.init()
     }
 
