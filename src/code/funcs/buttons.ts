@@ -1,3 +1,5 @@
+import {globalVars} from "../inc/const"
+
 type Action = () => void;
 
 export function bindStartButton(action: Action) {
@@ -20,8 +22,18 @@ export function bindStepButton(action: Action) {
     button.addEventListener("click", action)
 }
 
+export function bindShowMode() {
+    const select = document.getElementById("show-mode")! as HTMLSelectElement
+    select.addEventListener("change", () => {
+        const value = select.value
+        globalVars.showMode = +value
+    })
+}
+
+
 export function randomInt(min: number, max: number): number {
     return Math.floor(Math.random() * (max - min + 1)) + min
 }
+
 
 

@@ -7,7 +7,8 @@ import {ActionMode, CellMode, Direction} from "./enums"
 import Point from "../../types/point"
 import {BotAction, Cell, CellBots} from "./types"
 import FirstBot from "./first-bot"
-import {infoFont} from "../../inc/const"
+import {globalVars, infoFont} from "../../inc/const"
+
 
 
 const drawCellSize = 16
@@ -41,20 +42,32 @@ export default class SimpleEvo extends Engine2d {
                 if (c.mode !== CellMode.Empty) {
                     this.ctx.fillStyle = c.mode === CellMode.UnbreakableBarrier ? "#ffffff" : "#777"
                 } else {
-                    const green = Math.floor((c.energy)/(this.params!.conf.maxCellEnergy)*255)
-                    const blue = Math.floor((c.organic)/(this.params!.conf.maxCellOrganic)*255)
-                    this.ctx.fillStyle = `rgb(20,${green},${blue})`
+                    if (globalVars.showMode === 0) {
+                        const green = Math.floor((c.energy) / (this.params!.conf.maxCellEnergy) * 255)
+                        const blue = Math.floor((c.organic) / (this.params!.conf.maxCellOrganic) * 255)
+                        this.ctx.fillStyle = `rgb(20,${green},${blue})`
+                    } else
+                    {
+                        const green = c.energy > 0 ? 40 : 20
+                        const blue = c.organic > 0 ? 40 : 20
+                        this.ctx.fillStyle = `rgb(20,${green},${blue})`
+                    }
                 }
-
                 const cx = i * drawCellSize + this.camera.x + padding
                 const cy = j * drawCellSize+this.camera.y + padding
-
                 this.ctx.fillRect(cx, cy, innerCellSize, innerCellSize)
                 const bot = this.findBot(i, j)
                 if (bot) {
-                    const def = 200
-                    const red = Math.floor((bot.energy+def)/(def+this.params!.conf.maxBotEnergy)*255)
-                    this.ctx.fillStyle = `rgba(${red},0,0,0.8)`
+                    if (globalVars.showMode === 0) {
+                        const def = 200
+                        const red = Math.floor((bot.energy + def) / (def + this.params!.conf.maxBotEnergy) * 255)
+                        this.ctx.fillStyle = `rgba(${red},0,0,0.8)`
+                    } else if (globalVars.showMode === 1) {
+                        this.ctx.fillStyle = "#"+bot.id.slice(0, 6)
+                    } else {
+                        const v = 255-Math.floor(bot.lifeTime / this.params!.conf.maxLifeTime * 200)
+                        this.ctx.fillStyle = `rgb(${v},${v},${v})`
+                    }
                     this.ctx.fillRect(cx, cy, innerCellSize, innerCellSize)
                 }
 
@@ -190,6 +203,9 @@ export default class SimpleEvo extends Engine2d {
         })
         this.bots = this.bots.filter(b => b.energy > 0)
         this.cycle++
+
+        if (Math.random()<0.1) this.changeCells()
+
     }
 
     reset(): void {
@@ -238,12 +254,28 @@ export default class SimpleEvo extends Engine2d {
         return cells
     }
 
+    /**
+     * Меняем условия мира
+     */
+    private changeCells() {
+        // Добавляем на нижнем ярусе органики
+        for (let i=0; i<this.params!.size.x; i++) {
+            for (let j = Math.round(this.params!.size.y*0.8); j < this.params!.size.y; j++) {
+                const c = this.cells[i][j]
+                if (c.mode === CellMode.Empty) {
+                    if (c.organic < this.params!.conf.maxCellOrganic) {
+                        if (Math.random()<0.2) c.organic+=5
+                    }
+                }
+            }
+        }
+    }
 
     private initCells() {
         this.cells = []
 
-        const halfX1 = Math.floor(this.params!.size.x/2)-1
-        const halfX2 = halfX1+3
+        const halfX1 = Math.floor(this.params!.size.x/2)-2
+        const halfX2 = halfX1+4
         const halfY = Math.floor(this.params!.size.y/2)
         const maxY=this.params!.size.y
         for (let i=0; i<this.params!.size.x; i++) {
@@ -255,9 +287,9 @@ export default class SimpleEvo extends Engine2d {
                     organic: 0
                 }
                 this.cells[i][j].mode = (i>=halfX1 && i<=halfX2)
-                    ? j<halfY ? CellMode.UnbreakableBarrier : CellMode.BreakableBarrier
+                    ? (j<halfY/0.8) && (j>halfY) ? CellMode.BreakableBarrier : CellMode.UnbreakableBarrier
                     : CellMode.Empty
-                if ((this.cells[i][j].mode === CellMode.Empty)&&(Math.random()<0.5)) {
+                if ((this.cells[i][j].mode === CellMode.Empty)&&(Math.random()<0.2)) {
                     this.cells[i][j].energy = Math.round((maxY-j)/maxY * this.params!.conf.maxCellEnergy)
                 }
             }

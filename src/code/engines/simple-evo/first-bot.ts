@@ -6,7 +6,7 @@ import applyDirection from "./apply-direction"
 import Point from "../../types/point"
 import uiid from "../../funcs/uiid"
 
-const genomeLength = 100
+const genomeLength = 80
 const maxCommand = 34
 const maxSteps = 100
 
@@ -225,18 +225,20 @@ export default class FirstBot extends Bot {
 
     }
 
-    mutate(): boolean {
-        let wasMutated = false
+    copyGenome(parentBot: FirstBot): number {
+        this.genome = [...parentBot.genome]
+        let mutations = 0
         for (let i =  0; i < this.genome.length; i++) {
-            if (Math.random()<0.001) {
+            if (Math.random()<0.005) {
                 this.genome[i] = randomInt(0, maxCommand)
-                const newId = uiid()
-                console.log("Mutation!", this.id, newId)
-                wasMutated = true
-                this.id = newId
-                break
+                mutations++
+                if ((mutations+this.mutations)%5 === 0) {
+                    const newId = uiid()
+                    console.log("Many mutations", this.id, newId)
+                    this.id = newId
+                }
             }
         }
-        return wasMutated
+        return mutations
     }
 }
