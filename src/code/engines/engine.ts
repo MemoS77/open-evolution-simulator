@@ -5,6 +5,7 @@ export default abstract class Engine {
 
     protected canvas: HTMLCanvasElement
     protected params: EngineParams | null = null
+    cycle = 0
 
 
     abstract onDrag(dx: number, dy: number): void
@@ -18,8 +19,8 @@ export default abstract class Engine {
     abstract getParamsList(): EngineParams[]
 
     onParamsListSelect(index: number) {
-        console.log("params", index)
         this.params = this.getParamsList()[index]
+        this.cycle = 0
         this.reset()
     }
 

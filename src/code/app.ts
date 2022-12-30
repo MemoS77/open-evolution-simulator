@@ -1,10 +1,18 @@
 import Point from "./types/point"
 import {drawFPS} from "./funcs/fps"
 import {getCanvasCont, setEnginesList, setParamsList} from "./funcs/dom"
-import {bindPauseButton, bindResetButton, bindShowMode, bindStartButton, bindStepButton} from "./funcs/buttons"
+import {
+    bindPauseButton,
+    bindResetButton,
+    bindShowMode,
+    bindSpeed,
+    bindStartButton,
+    bindStepButton
+} from "./funcs/buttons"
 import EngineState from "./enums/engine-state"
 import Engine from "./engines/engine"
 import engines from "./engines"
+import {globalVars} from "./inc/const"
 
 export default class App {
     private canvas: HTMLCanvasElement
@@ -53,10 +61,10 @@ export default class App {
         bindResetButton(() => this.reset())
         bindPauseButton(() => this.pause())
         bindStepButton(() => {
-            this.engine.nextStep()
-            this.engine.draw()
+            this.oneStep()
         })
         bindShowMode()
+        bindSpeed()
 
         const select = document.getElementById("engines-list")! as HTMLSelectElement
         select.addEventListener("change", (e) => this.onEngineSelect((e.target as HTMLOptionElement).value))
@@ -87,13 +95,20 @@ export default class App {
      */
     loop() {
         if (this.state === EngineState.RUNNING) {
-            this.engine.nextStep()
-            this.engine.draw()
-            drawFPS(this.ctx)
+            this.oneStep()
         }
         requestAnimationFrame(() => this.loop())
     }
 
+    private oneStep(): void {
+        for (let i = 0; i < globalVars.speed; i++) {
+            this.engine.cycle++
+            this.engine.nextStep()
+        }
+        this.engine.draw()
+        drawFPS(this.ctx)
+        this.ctx.fillText(this.engine.cycle+ " cycle", 10, 56)
+    }
 
     // Start evolution
     start(): void {
@@ -111,6 +126,7 @@ export default class App {
         this.state = EngineState.IDLE
         if (this.engine)    {
             this.engine.reset()
+            this.engine.cycle = 0
             this.engine.draw()
         }
     }
