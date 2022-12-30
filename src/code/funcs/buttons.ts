@@ -30,6 +30,14 @@ export function bindShowMode() {
     })
 }
 
+export function bindFilterMode() {
+    const select = document.getElementById("filter-mode")! as HTMLSelectElement
+    select.addEventListener("change", () => {
+        const value = select.value
+        globalVars.filterMode = +value
+    })
+}
+
 export function bindSpeed() {
     const select = document.getElementById("speed")! as HTMLSelectElement
     select.addEventListener("change", () => {

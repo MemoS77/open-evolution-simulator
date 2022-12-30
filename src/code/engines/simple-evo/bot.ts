@@ -9,6 +9,7 @@ export default abstract class Bot {
     lifeTime = 0
     generation = 0
     mutations = 0
+    genome: number[]
 
     protected readonly params: EvoParams
 

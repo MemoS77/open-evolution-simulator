@@ -26,6 +26,28 @@ export function setParamsList(engine: Engine): EngineParams[] {
     return fields
 }
 
+export function setViewList(list: string[]) {
+    const select = document.getElementById("show-mode") as HTMLSelectElement
+    select.innerHTML = ""
+    list.forEach((item, index) => {
+        const option = document.createElement("option")
+        option.value = index.toString()
+        option.innerText = item
+        select.appendChild(option)
+    })
+}
+
+export function setFilterList(list: string[]) {
+    const select = document.getElementById("filter-mode") as HTMLSelectElement
+    select.innerHTML = ""
+    list.forEach((item, index) => {
+        const option = document.createElement("option")
+        option.value = index.toString()
+        option.innerText = item
+        select.appendChild(option)
+    })
+}
+
 export function setEnginesList(engines: Engine[]) {
     const list = document.getElementById("engines-list") as HTMLSelectElement
     list.innerHTML = ""

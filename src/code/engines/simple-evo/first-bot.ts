@@ -17,7 +17,6 @@ const maxDiff = 2
 
 export default class FirstBot extends Bot {
 
-    genome: number[]
     private current = 0
 
     /**

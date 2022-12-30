@@ -32,6 +32,16 @@ export default class SimpleEvo extends Engine2d {
         }
     }
 
+
+    getViewTitles(): string[] {
+        return ["Color by genome", "Energy", "Life time", "Energy and life time"]
+    }
+
+
+    getFilterTitles(): string[] {
+        return ["With energy & organic", "No energy & organic"]
+    }
+
     draw(): void {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
         for (let i=0; i<this.params.size.x; i++) {
@@ -41,7 +51,7 @@ export default class SimpleEvo extends Engine2d {
                 if (c.mode !== CellMode.Empty) {
                     this.ctx.fillStyle = c.mode === CellMode.UnbreakableBarrier ? "#ffffff" : "#777"
                 } else {
-                    if (globalVars.showMode === 0) {
+                    if (globalVars.filterMode === 0) {
                         const green = Math.floor((c.energy) / (this.params!.conf.maxCellEnergy) * 255)
                         const blue = Math.floor((c.organic) / (this.params!.conf.maxCellOrganic) * 255)
                         this.ctx.fillStyle = `rgb(20,${green},${blue})`
@@ -55,15 +65,25 @@ export default class SimpleEvo extends Engine2d {
                 this.ctx.fillRect(cx, cy, innerCellSize, innerCellSize)
                 const bot = this.findBot(i, j)
                 if (bot) {
-                    if (globalVars.showMode === 0) {
+                    if (globalVars.showMode === 1) {
                         const def = 200
                         const red = Math.floor((bot.energy + def) / (def + this.params!.conf.maxBotEnergy) * 255)
                         this.ctx.fillStyle = `rgba(${red},0,0,0.8)`
-                    } else if (globalVars.showMode === 1) {
+                    } else if (globalVars.showMode === 0) {
                         this.ctx.fillStyle = "hsl(" + bot.id + " 100% 50%)"
                     } else if (globalVars.showMode === 2) {
-                        const v = 255 - Math.floor(bot.lifeTime / this.params!.conf.maxLifeTime * 200)
-                        this.ctx.fillStyle = `rgb(${v},${v},${v})`
+                        let r = 0
+                        let g = 0
+                        let b = 0
+                        const cf = bot.lifeTime / this.params!.conf.maxLifeTime
+
+                        if (cf < 0.02)  g =255
+                        else if (cf < 0.15) g = 150
+                        else if (cf < 0.5)  b = 170
+                        else if (cf < 0.9)  r = 170
+                        else  r=255
+
+                        this.ctx.fillStyle = `rgb(${r},${g},${b})`
                     }
                     else {
                         // Чем моложе и больше энергии, тем ярче
@@ -101,13 +121,17 @@ export default class SimpleEvo extends Engine2d {
             }
         }
 
-        // Вывести геном 3 самых популярных ботов
-        if (this.cycle % 1500 === 0) {
+        // Вывести геном самых популярных ботов
+        if (this.cycle % 1900 === 0) {
             const sortedBots = Object.entries(botsCount).sort((a, b) => b[1] - a[1])
-            for (let i = 0; i < 3; i++) {
+            for (let i = 0; i < 5; i++) {
                 const botId = sortedBots[i][0]
-                const bot = this.bots.find(b => b.id === Number(botId)) as FirstBot
-                console.log(bot.id, "x" + botsCount[bot.id], JSON.stringify(bot.genome))
+                const bot = this.bots.find(b => b.id === Number(botId))
+                if (bot) {
+                    console.log(`%c${bot.id} x ${botsCount[bot.id]}`,  "background-color: hsl(" + bot.id + " 100% 50%); color: black;font-size:10pt;")
+                    console.log(`${JSON.stringify(bot.genome)}`)
+                }
+
             }
         }
 
@@ -233,10 +257,7 @@ export default class SimpleEvo extends Engine2d {
 
         })
         this.bots = this.bots.filter(b => b.energy > 0)
-
-
-        if (Math.random()<0.1) this.changeCells()
-
+        if (Math.random()<0.2) this.changeCells()
     }
 
     reset(): void {
@@ -293,13 +314,17 @@ export default class SimpleEvo extends Engine2d {
      * Меняем условия мира
      */
     private changeCells() {
+        const conf = this.params!.conf
         // Добавляем на нижнем ярусе органики
-        for (let i=0; i<this.params!.size.x; i++) {
-            for (let j = Math.round(this.params!.size.y*0.8); j < this.params!.size.y; j++) {
-                const c = this.cells[i][j]
-                if (c.mode === CellMode.Empty) {
-                    if (c.organic < this.params!.conf.maxCellOrganic) {
-                        if (Math.random()<0.2) c.organic+=5
+
+        if (conf.organicProp) {
+            for (let i = 0; i < this.params!.size.x; i++) {
+                for (let j = Math.round(this.params!.size.y * (1-conf.organicProp)); j < this.params!.size.y; j++) {
+                    const c = this.cells[i][j]
+                    if (c.mode === CellMode.Empty) {
+                        if (c.organic < conf.maxCellOrganic) {
+                            if (Math.random() <= 0.2) c.organic += 5
+                        }
                     }
                 }
             }
@@ -308,9 +333,7 @@ export default class SimpleEvo extends Engine2d {
 
     private initCells() {
         this.cells = []
-
-        const t  = Math.round(this.params!.size.x / 3)
-
+        const conf = this.params!.conf
         const halfY = Math.floor(this.params!.size.y/2)
         const maxY=this.params!.size.y
         for (let i=0; i<this.params!.size.x; i++) {
@@ -321,14 +344,21 @@ export default class SimpleEvo extends Engine2d {
                     energy: 0,
                     organic: 0
                 }
-                this.cells[i][j].mode = (i === t) || (i === t*2)
-                    ? (j<halfY/0.9) && (j>halfY) ? CellMode.BreakableBarrier : CellMode.UnbreakableBarrier
+                this.cells[i][j].mode = conf.centerBorder && (i === Math.round(this.params!.size.x / 2))
+                    ? ((j<halfY/0.8) && (j>halfY) ? CellMode.BreakableBarrier : CellMode.UnbreakableBarrier)
                     : CellMode.Empty
-                if ((this.cells[i][j].mode === CellMode.Empty)&&(Math.random()<0.4)) {
-                    this.cells[i][j].energy = Math.round((maxY-j)/maxY * this.params!.conf.maxCellEnergy)
+                if ((this.cells[i][j].mode === CellMode.Empty)&&(Math.random()<=conf.greensProp)) {
+                    this.cells[i][j].energy = Math.round((maxY-j)/maxY * conf.maxCellEnergy)
                 }
             }
         }
+
+        conf.greens?.forEach(g => {
+            const x = g.x
+            const y = g.y
+            this.cells[x][y].mode = CellMode.Empty
+            this.cells[x][y].energy = this.params!.conf.maxCellEnergy
+        })
     }
 
 }
