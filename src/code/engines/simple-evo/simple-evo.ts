@@ -19,7 +19,6 @@ export default class SimpleEvo extends Engine2d {
     bots: Bot[] = []
     cells: Cell[][] = []
     params: EvoEngineParams
-    private cycle = 0
 
 
     override centerCamera() {
@@ -115,7 +114,7 @@ export default class SimpleEvo extends Engine2d {
 
         this.ctx.fillStyle = "Gray"
         this.ctx.font      = infoFont
-        this.ctx.fillText(this.cycle+ " cycle", 10, 56)
+
         this.ctx.fillText("Max generation: " + maxGeneration, 10, 76)
         this.ctx.fillText("Max mutations: " + maxMutations, 10, 96)
         // Total bots
@@ -234,7 +233,7 @@ export default class SimpleEvo extends Engine2d {
 
         })
         this.bots = this.bots.filter(b => b.energy > 0)
-        this.cycle++
+
 
         if (Math.random()<0.1) this.changeCells()
 

@@ -30,6 +30,14 @@ export function bindShowMode() {
     })
 }
 
+export function bindSpeed() {
+    const select = document.getElementById("speed")! as HTMLSelectElement
+    select.addEventListener("change", () => {
+        const value = select.value
+        globalVars.speed = +value
+    })
+}
+
 
 export function randomInt(min: number, max: number): number {
     return Math.floor(Math.random() * (max - min + 1)) + min
