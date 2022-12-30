@@ -32,6 +32,16 @@ export default class SimpleEvo extends Engine2d {
         }
     }
 
+
+    getViewTitles(): string[] {
+        return ["Color by genome", "Energy", "Life time", "Energy and life time"]
+    }
+
+
+    getFilterTitles(): string[] {
+        return ["With energy & organic", "No energy & organic"]
+    }
+
     draw(): void {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
         for (let i=0; i<this.params.size.x; i++) {
@@ -62,8 +72,18 @@ export default class SimpleEvo extends Engine2d {
                     } else if (globalVars.showMode === 0) {
                         this.ctx.fillStyle = "hsl(" + bot.id + " 100% 50%)"
                     } else if (globalVars.showMode === 2) {
-                        const v = 255 - Math.floor(bot.lifeTime / this.params!.conf.maxLifeTime * 200)
-                        this.ctx.fillStyle = `rgb(${v},${v},${v})`
+                        let r = 0
+                        let g = 0
+                        let b = 0
+                        const cf = bot.lifeTime / this.params!.conf.maxLifeTime
+
+                        if (cf < 0.02)  g =255
+                        else if (cf < 0.15) g = 150
+                        else if (cf < 0.5)  b = 170
+                        else if (cf < 0.9)  r = 170
+                        else  r=255
+
+                        this.ctx.fillStyle = `rgb(${r},${g},${b})`
                     }
                     else {
                         // Чем моложе и больше энергии, тем ярче
@@ -101,13 +121,17 @@ export default class SimpleEvo extends Engine2d {
             }
         }
 
-        // Вывести геном 3 самых популярных ботов
-        if (this.cycle % 1500 === 0) {
+        // Вывести геном самых популярных ботов
+        if (this.cycle % 1900 === 0) {
             const sortedBots = Object.entries(botsCount).sort((a, b) => b[1] - a[1])
-            for (let i = 0; i < 3; i++) {
+            for (let i = 0; i < 5; i++) {
                 const botId = sortedBots[i][0]
-                const bot = this.bots.find(b => b.id === Number(botId)) as FirstBot
-                console.log(bot.id, "x" + botsCount[bot.id], JSON.stringify(bot.genome))
+                const bot = this.bots.find(b => b.id === Number(botId))
+                if (bot) {
+                    console.log(`%c${bot.id} x ${botsCount[bot.id]}`,  "background-color: hsl(" + bot.id + " 100% 50%); color: black;font-size:10pt;")
+                    console.log(`${JSON.stringify(bot.genome)}`)
+                }
+
             }
         }
 
@@ -328,6 +352,13 @@ export default class SimpleEvo extends Engine2d {
                 }
             }
         }
+
+        conf.greens?.forEach(g => {
+            const x = g.x
+            const y = g.y
+            this.cells[x][y].mode = CellMode.Empty
+            this.cells[x][y].energy = this.params!.conf.maxCellEnergy
+        })
     }
 
 }

@@ -1,6 +1,6 @@
 import Point from "./types/point"
 import {drawFPS} from "./funcs/fps"
-import {getCanvasCont, setEnginesList, setParamsList} from "./funcs/dom"
+import {getCanvasCont, setEnginesList, setFilterList, setParamsList, setViewList} from "./funcs/dom"
 import {
     bindFilterMode,
     bindPauseButton,
@@ -38,6 +38,8 @@ export default class App {
         this.engine = engines[+index]
         //const info = this.engine.getInfo()
         const params = setParamsList(this.engine)
+        setViewList(this.engine.getViewTitles())
+        setFilterList(this.engine.getFilterTitles())
         this.engine.init(this.canvas, params.length ? params[0] : null)
         this.engine.clear()
     }

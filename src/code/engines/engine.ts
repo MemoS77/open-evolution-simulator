@@ -18,6 +18,14 @@ export default abstract class Engine {
 
     abstract getParamsList(): EngineParams[]
 
+    getViewTitles(): string[] {
+        return ["Default view"]
+    }
+
+    getFilterTitles(): string[] {
+        return ["Default filter"]
+    }
+
     onParamsListSelect(index: number) {
         this.params = this.getParamsList()[index]
         this.cycle = 0

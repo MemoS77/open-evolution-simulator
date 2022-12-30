@@ -1,4 +1,5 @@
 import {ActionMode, CellMode, Direction} from "./enums"
+import Point from "../../types/point"
 
 // Условия мира
 export type EvoParams = {
@@ -25,6 +26,10 @@ export type EvoParams = {
 
     // Рядов органики
     organicProp: number // 0-1
+
+    // Жестко занятые клетки с максимальной энергией
+    greens?: Point[],
+
 }
 
 
