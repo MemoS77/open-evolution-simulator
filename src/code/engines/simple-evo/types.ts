@@ -15,7 +15,16 @@ export type EvoParams = {
     // Максимально органики в клетке
     maxCellOrganic: number
     // Максимальное время жизни бота
-    maxLifeTime: number
+    maxLifeTime: number,
+
+    // Линия посреди поля
+    centerBorder: boolean,
+
+    // Верооятность зеленой клетки
+    greensProp: number, // 0-1
+
+    // Рядов органики
+    organicProp: number // 0-1
 }
 
 

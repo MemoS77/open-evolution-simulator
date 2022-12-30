@@ -2,6 +2,7 @@ import Point from "./types/point"
 import {drawFPS} from "./funcs/fps"
 import {getCanvasCont, setEnginesList, setParamsList} from "./funcs/dom"
 import {
+    bindFilterMode,
     bindPauseButton,
     bindResetButton,
     bindShowMode,
@@ -64,7 +65,9 @@ export default class App {
             this.oneStep()
         })
         bindShowMode()
+        bindFilterMode()
         bindSpeed()
+
 
         const select = document.getElementById("engines-list")! as HTMLSelectElement
         select.addEventListener("change", (e) => this.onEngineSelect((e.target as HTMLOptionElement).value))
