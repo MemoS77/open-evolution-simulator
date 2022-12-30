@@ -236,7 +236,7 @@ export default class FirstBot extends Bot {
     init(): void {
         this.genome = []
 
-        if (Math.random() < 0.5) {
+        if (Math.random() < 0.2) {
             for (let i = this.genome.length; i < genomeLength; i++) {
                 this.genome.push(randomInt(0, maxCommand))
             }

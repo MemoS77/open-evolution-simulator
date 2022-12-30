@@ -322,10 +322,10 @@ export default class SimpleEvo extends Engine2d {
                     energy: 0,
                     organic: 0
                 }
-                this.cells[i][j].mode = (i%t === Math.round(t/2))
-                    ? (j<halfY/0.8) && (j>halfY) ? CellMode.BreakableBarrier : CellMode.UnbreakableBarrier
+                this.cells[i][j].mode = (i === t) || (i === t*2)
+                    ? (j<halfY/0.9) && (j>halfY) ? CellMode.BreakableBarrier : CellMode.UnbreakableBarrier
                     : CellMode.Empty
-                if ((this.cells[i][j].mode === CellMode.Empty)&&(Math.random()<0.2)) {
+                if ((this.cells[i][j].mode === CellMode.Empty)&&(Math.random()<0.4)) {
                     this.cells[i][j].energy = Math.round((maxY-j)/maxY * this.params!.conf.maxCellEnergy)
                 }
             }
