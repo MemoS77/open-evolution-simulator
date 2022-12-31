@@ -1,0 +1,14 @@
+import EngineParams from "../../types/engine-params"
+import {WorldParams} from "./types"
+
+export interface PlantsEngineParams extends EngineParams {
+    conf: WorldParams
+}
+
+
+export const paramsList: PlantsEngineParams[] = [{
+    name: "Standart map",
+    size: {x: 70, y: 50},
+    count: 300,
+    conf: {}
+}]
