@@ -1,7 +1,8 @@
 import Engine2d from "./engine2d"
+import {globalVars} from "../inc/const"
 
 
-export const drawCellSize = 14
+export const drawCellSize = 16
 export const cellPadding = 1
 export const innerCellSize = drawCellSize - cellPadding * 2
 
@@ -11,7 +12,7 @@ export default abstract class CellEngine extends Engine2d {
         const x =  this.params!.size.x * drawCellSize
         const y =  this.params!.size.y * drawCellSize
 
-        this.camera = {
+        globalVars.camera = {
             x: Math.round((this.canvas.width-x)/2),
             y: Math.round((this.canvas.height-y)/2),
             zoom: 1

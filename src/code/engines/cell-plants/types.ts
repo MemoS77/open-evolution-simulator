@@ -1,4 +1,4 @@
-import BotCell from "./bot-cell"
+import PlantBotCell from "./plant-bot-cell"
 
 export type WorldParams = {
     // Extra params
@@ -8,7 +8,7 @@ export type Cell = {
     energy: number,
     organic: number,
     poison: boolean,
-    botCell?: BotCell | null
+    botCell?: PlantBotCell | null
 }
 
 export type EnemyGen = {

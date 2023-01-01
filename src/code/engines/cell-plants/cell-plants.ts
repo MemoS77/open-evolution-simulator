@@ -5,6 +5,7 @@ import CellEngine, {cellPadding, drawCellSize, innerCellSize} from "../cell-engi
 import Point from "../../types/point"
 import PlantBot from "./plant-bot"
 import {poisonEnergy} from "./const"
+import {globalVars} from "../../inc/const"
 
 
 
@@ -19,22 +20,23 @@ export default class CellPlants extends CellEngine {
     draw(): void {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
         this.drawCells()
+        this.drawBots()
     }
 
     drawCells(): void {
         this.cells.forEach((row, i) => {
             row.forEach((cell, j) => {
                 this.ctx.fillStyle = cell.poison ? "red" : "black"
-                const cx = i * drawCellSize + this.camera.x + cellPadding
-                const cy = j * drawCellSize+this.camera.y + cellPadding
+                const cx = i * drawCellSize + globalVars.camera.x + cellPadding
+                const cy = j * drawCellSize + globalVars.camera.y + cellPadding
                 this.ctx.fillRect(cx, cy, innerCellSize, innerCellSize)
-                this.ctx.fillRect(cx, cy, innerCellSize, innerCellSize)
-
-                if (cell.botCell) {
-                    this.ctx.fillStyle = "#FFF"//cell.botCell.color
-                    this.ctx.fillRect(cx, cy, innerCellSize, innerCellSize)
-                }
             })
+        })
+    }
+
+    drawBots(): void {
+        this.bots.forEach(bot => {
+            bot.draw(this.ctx)
         })
     }
 

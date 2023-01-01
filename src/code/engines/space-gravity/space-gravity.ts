@@ -5,6 +5,7 @@ import defParams from "./def-params"
 import Color from "./color"
 import engineParams from "../../types/engine-params"
 import paramsList from "./params-list"
+import {globalVars} from "../../inc/const"
 
 export default class SpaceGravityEngine extends Engine2d {
 
@@ -33,13 +34,13 @@ export default class SpaceGravityEngine extends Engine2d {
         this.ctx.strokeStyle = "gray"
         this.ctx.setLineDash([5, 10])
         this.ctx.lineWidth = 1
-        this.ctx.strokeRect(this.camera.x, this.camera.y, this.params!.size.x, this.params!.size.y)
+        this.ctx.strokeRect(globalVars.camera.x, globalVars.camera.y, this.params!.size.x, this.params!.size.y)
 
         const twoPi = 2 * Math.PI
         this.planets.forEach(planet => {
             this.ctx.fillStyle = planet.color.getRGB()
             this.ctx.beginPath()
-            this.ctx.arc(planet.position.x+this.camera.x, planet.position.y+this.camera.y, planet.radius, 0, twoPi)
+            this.ctx.arc(planet.position.x+globalVars.camera.x, planet.position.y+globalVars.camera.y, planet.radius, 0, twoPi)
             this.ctx.fill()
         })
     }

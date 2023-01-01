@@ -1,4 +1,4 @@
-import BotCell from "./bot-cell"
+import PlantBotCell from "./plant-bot-cell"
 import {randomInt} from "../../funcs/buttons"
 import {maxGenomeLength, minGenomeLength, newBotEnergy} from "./const"
 import {Genome} from "./types"
@@ -10,7 +10,7 @@ import {randomColor} from "../../funcs/utils"
 export default class PlantBot  {
     private rG = 0
     private energy: number
-    cells: BotCell[] = []
+    cells: PlantBotCell[] = []
     private genome: Genome = []
     private color: string
 
@@ -20,7 +20,7 @@ export default class PlantBot  {
         this.energy = energy ?? newBotEnergy
         this.rG = 0
         this.generateGenome()
-        this.cells.push(new BotCell(BotCellKind.Stem, direction ?? randomInt(0, 3), position, this.energy, null))
+        this.cells.push(new PlantBotCell(BotCellKind.Stem, direction ?? randomInt(0, 3), position, this.energy, null))
     }
 
     public generateGenome(): void {
@@ -37,6 +37,11 @@ export default class PlantBot  {
         return this.energy / this.cells.length
     }
 
+    public draw(ctx: CanvasRenderingContext2D): void {
+        this.cells.forEach(cell => {
+            cell.draw(ctx, this.color)
+        })
+    }
 
 
 

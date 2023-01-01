@@ -43,8 +43,8 @@ export default class SimpleEvo extends CellEngine {
                         this.ctx.fillStyle = "rgb(0,0,0)"
                     }
                 }
-                const cx = i * drawCellSize + this.camera.x + cellPadding
-                const cy = j * drawCellSize+this.camera.y + cellPadding
+                const cx = i * drawCellSize + globalVars.camera.x + cellPadding
+                const cy = j * drawCellSize+globalVars.camera.y + cellPadding
                 this.ctx.fillRect(cx, cy, innerCellSize, innerCellSize)
                 const bot = this.findBot(i, j)
                 if (bot) {
