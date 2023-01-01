@@ -3,9 +3,13 @@ import {paramsList, PlantsEngineParams} from "./params-list"
 import {Cell} from "./types"
 import CellEngine, {cellPadding, drawCellSize, innerCellSize} from "../cell-engine"
 import Point from "../../types/point"
-import PlantBot from "./plant-bot"
-import {poisonEnergy} from "./const"
+import {newBotEnergy, poisonEnergy} from "./const"
 import {globalVars} from "../../inc/const"
+import Bot from "./bot"
+import PlantBot from "./plant-bot"
+import {randomColor} from "../../funcs/utils"
+import {randomInt} from "../../funcs/buttons"
+import {CellActionKind} from "./enums"
 
 
 
@@ -15,7 +19,7 @@ export default class CellPlants extends CellEngine {
 
     override params: PlantsEngineParams
     cells: Cell[][] = []
-    bots: PlantBot[] = []
+    bots: Bot[] = []
 
     draw(): void {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
@@ -40,8 +44,6 @@ export default class CellPlants extends CellEngine {
         })
     }
 
-
-
     getInfo(): EngineInfo {
         return {
             name: "Cell Plants",
@@ -56,7 +58,29 @@ export default class CellPlants extends CellEngine {
     }
 
     nextStep(): void {
-        //
+        for (let i = 0; i < this.bots.length; i++) {
+            const bot = this.bots[i]
+            for (let j = 0; j < this.bots[i].getCellsCount(); j++) {
+                const action = bot.getCellAction(j)
+                switch (action.kind) {
+                case CellActionKind.MainAction:
+                    bot.energy -= 1
+                    break
+                case CellActionKind.Move:
+                    bot.energy -= 1
+                    break
+                case CellActionKind.Idle:
+                    bot.energy -= 2
+                    break
+                case CellActionKind.SelfDestruct:
+                    break
+
+                }
+
+            }
+        }
+        this.draw()
+
     }
 
     initCells(): void {
@@ -76,9 +100,9 @@ export default class CellPlants extends CellEngine {
     }
 
     addBot(position: Point): void {
-        const newBot = new PlantBot(position)
+        const newBot = new PlantBot(position, randomColor(), newBotEnergy, randomInt(0, 3))
         this.bots.push(newBot)
-        this.cells[position.x][position.y].botCell = newBot.cells[0]
+        this.cells[position.x][position.y].botCell = newBot.getCell(0)
     }
 
 

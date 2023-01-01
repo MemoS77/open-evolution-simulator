@@ -1,4 +1,5 @@
-import PlantBotCell from "./plant-bot-cell"
+import {CellActionKind} from "./enums"
+import BotCell from "./bot-cell"
 
 export type WorldParams = {
     // Extra params
@@ -8,7 +9,13 @@ export type Cell = {
     energy: number,
     organic: number,
     poison: boolean,
-    botCell?: PlantBotCell | null
+    botCell?: BotCell | null
+}
+
+
+export type CellAction = {
+    kind: CellActionKind,
+    param: number
 }
 
 export type EnemyGen = {

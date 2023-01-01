@@ -7,7 +7,7 @@ export interface PlantsEngineParams extends EngineParams {
 
 
 export const paramsList: PlantsEngineParams[] = [{
-    name: "Standart map",
+    name: "Standard map",
     size: {x: 70, y: 50},
     count: 500,
     conf: {}
