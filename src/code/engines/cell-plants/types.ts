@@ -1,5 +1,5 @@
 import {CellActionKind} from "./enums"
-import BotCell from "./bot-cell"
+import Bot from "./bot"
 
 export type WorldParams = {
     // Extra params
@@ -9,7 +9,8 @@ export type Cell = {
     energy: number,
     organic: number,
     poison: boolean,
-    botCell?: BotCell | null
+    botCellIndex: number
+    bot?: Bot | null
 }
 
 

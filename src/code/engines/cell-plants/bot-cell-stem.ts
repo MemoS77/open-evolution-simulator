@@ -12,5 +12,9 @@ export default class BotCellStem extends BotCell {
         ctx.strokeRect(x, y, innerCellSize, innerCellSize)
     }
 
+    cellAction(): boolean {
+        return false
+    }
+
 
 }

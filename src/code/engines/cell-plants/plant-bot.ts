@@ -1,27 +1,27 @@
 import {randomInt} from "../../funcs/buttons"
 import {maxGenLength, minGenLength} from "./const"
 import {CellAction, Genome} from "./types"
-import {Direction} from "./enums"
 import Point from "../../types/point"
 import BotCellStem from "./bot-cell-stem"
 import Bot from "./bot"
 import BotCell from "./bot-cell"
+import {FourDirection} from "../../enums/four-direction"
 
 
 export default class PlantBot extends Bot {
     // Общий регистр для всех клеток
     private rG = 0
-    protected cells: BotCell[]
+    override cells: BotCell[]
     private genome: Genome
 
     override getCellAction(): CellAction {
         return {
-            kind: 0,
+            kind: 2,
             param: 0
         }
     }
 
-    override init(position: Point, direction: Direction) {
+    override init(position: Point, direction: FourDirection) {
         this.rG = 0
         this.generateGenome()
         this.cells.push(new BotCellStem(

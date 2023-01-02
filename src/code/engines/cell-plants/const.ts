@@ -13,8 +13,8 @@ export const maxCellBotEnergy = 200
 // Энергия нового бота
 export const newBotEnergy = 128
 
-// Энергия от солнца не более
-export const maxPhotoEnergy = 30
+// Энергия от солнца не более на одну свободную клетку
+export const maxPhotoEnergy = 16
 
 // Максимально возможное накопление энергии, после которого в ячейке появляется яд
 export const poisonEnergy = 500

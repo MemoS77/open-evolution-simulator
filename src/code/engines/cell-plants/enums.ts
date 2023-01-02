@@ -1,12 +1,3 @@
-export enum Direction {
-    Up,
-    Down,
-    Left,
-    Right
-}
-
-
-
 export enum CellActionKind {
     Idle,
     MainAction,
@@ -27,9 +18,7 @@ export enum BotCellKind {
     Mouth,
 
     // Репродуктивная клетка
-    Reprod,
-
-    // Боевая клетка
     Armor,
+
 
 }
