@@ -7,7 +7,7 @@ import {FourDirection} from "../../enums/four-direction"
 import {GoodGens} from "./good-gens"
 import {randomColor} from "../../funcs/utils"
 
-const maxCommand = 38
+const maxCommand = 40
 
 export default class MainBot extends Bot {
 
@@ -22,8 +22,8 @@ export default class MainBot extends Bot {
     nextCommand(inc = 1): number {
         this.cursor += inc
         const g = this.getGen()
-        if (this.cursor >= g.length) {
-            this.cursor = this.cursor % this.gens.length
+        while (this.cursor >= g.length) {
+            this.cursor -= g.length
         }
         while (this.cursor < 0) {
             this.cursor += g.length
@@ -78,6 +78,7 @@ export default class MainBot extends Bot {
                 break
             case 11:
                 this.rX = randomInt(0, 100)
+                //console.log("Random X", this.rX)
                 break
             case 12:
                 this.rX = this.getParentsCount()
@@ -140,10 +141,10 @@ export default class MainBot extends Bot {
                 if (this.rX===this.rY) this.nextCommand(2)
                 break
             case 31:
-                this.nextCommand(this.rX)
+                this.nextCommand(this.rX+1)
                 break
             case 32:
-                this.nextCommand(this.rY)
+                this.nextCommand(this.rY+1)
                 break
             case 33:
                 kind = this.rX%5
@@ -160,8 +161,12 @@ export default class MainBot extends Bot {
             case 37:
                 this.rX = randomInt(0, 1)
                 break
-
-
+            case 38:
+                this.rX = this.direction
+                break
+            case 39:
+                this.nextCommand(-5)
+                break
             }
             step++
             if (step>maxGenSteps) return {
@@ -190,7 +195,7 @@ export default class MainBot extends Bot {
         if (parentBot) {
             const p = parentBot as MainBot
             for (let i = 0; i < 3; i++) {
-                this.gens.push(p.gens[i])
+                this.gens.push([...p.gens[i]])
             }
             this.mutate()
         } else {
@@ -210,6 +215,7 @@ export default class MainBot extends Bot {
         const idx = randomInt(0, 2)
         const mode = randomInt(0, 200)
         if (mode<3) {
+            //console.log("Mutate gen", idx)
             //console.log("Old Gen", this.gens[idx])
             switch (mode) {
             // Добавить случайную команду
@@ -230,10 +236,10 @@ export default class MainBot extends Bot {
 
             const changeColor = randomInt(0, 100)
             if (changeColor < 10) {
-                console.log("New Color!")
+                //console.log("New Color!")
                 this.color = randomColor()
             } else if (changeColor > 90) {
-                console.log("New Border Color!")
+                //console.log("New Border Color!")
                 this.borderColor = randomColor()
             }
         }
@@ -241,6 +247,7 @@ export default class MainBot extends Bot {
 
     // Половое размножение
     override mergeStem(bot: MainBot): void {
+        //console.log("Merge Stem")
         const idx = randomInt(0, 2)
         this.gens[idx] = bot.gens[idx]
 
