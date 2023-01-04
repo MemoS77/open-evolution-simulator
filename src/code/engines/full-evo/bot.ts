@@ -126,7 +126,7 @@ export default abstract class Bot {
 
     // Действие если клетка выжила при столкновении (выживает одна).
     // Например, получить информацию о другой для полового размножения
-    protected abstract onCollisionAlive(bot: Bot[]): void
+    abstract mergeStem(bot: Bot): void
     abstract getAction(): CellAction
 
 }

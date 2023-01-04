@@ -15,7 +15,7 @@ export default class FixedBot extends Bot {
         // Nothing
     }
 
-    override  onCollisionAlive(): void {
+    override  mergeStem(): void {
         // Nothing
     }
 

@@ -31,9 +31,7 @@ export default class FullEvo extends CellEngine {
 
     getBot(id: number): Bot | null {
         const bot = this.bots.get(id)
-        if (bot) {
-            if (bot.isAlive()) return bot
-        }
+        if (bot && bot.isAlive()) return bot
         return null
     }
 
@@ -128,18 +126,68 @@ export default class FullEvo extends CellEngine {
     }
 
 
-
-
+    /*
     clearDeadBots(): void {
         this.bots.forEach(bot => {
             if (bot.energy<minBotEnergy) bot.die()
         })
     }
 
+ */
+
+    workCollision(cell: Cell): void {
+        // Боты на одной ячейке
+        const kinds = [0, 0, 0]
+        let sm = 0
+        cell.bots.forEach(botId => {
+            const bot = this.getBot(botId)
+            if (bot) {
+                kinds[bot.kind]++
+                sm++
+            }
+        })
+        if (sm>1) {
+            let stem: Bot | null = null
+            cell.bots.forEach(botId => {
+                const bot = this.getBot(botId)
+                if (bot) {
+                    /** Если два шипа, все погибает вообще все.
+                     * Если один, один шип выживет
+                     * Листья дохнут всегда
+                     * все стволовые сливаются в одну
+                     * */
+                    if (kinds[BotKind.Armor]>1
+                        || (kinds[BotKind.Armor]===1 && bot.kind!==BotKind.Armor)
+                        || bot.kind === BotKind.Leaf) {
+                        bot.die()
+                        console.log("Collision", bot.kind, bot.engineIndex)
+                    } else {
+                        if (bot.kind === BotKind.Stem) {
+                            if (stem===null)  stem = bot
+                            else {
+                                console.log("Merge")
+                                stem.mergeStem(bot)
+                                stem.addEnergy(bot.energy)
+                                bot.die()
+                            }
+
+                        }
+                    }
+                }
+            })
+        }
+
+    }
 
     // Обработать ботов на одной ячейке
     workCollisions(): void {
-        //
+        this.cells.forEach(row => {
+            row.forEach(cell => {
+                if (cell.bots.length > 1) {
+                    this.workCollision(cell)
+                }
+            })
+        })
     }
 
     override nextStep(): void {
@@ -183,6 +231,7 @@ export default class FullEvo extends CellEngine {
 
         })
 
+        this.indexBots()
         this.workCollisions()
         //this.clearDeadBots()
         this.draw()
