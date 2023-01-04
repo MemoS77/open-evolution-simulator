@@ -10,6 +10,9 @@ export type Cell = {
     bots: number[]
 }
 
+export type Gen = number[]
+
+export type Genome = Gen[]
 
 export type CellAction = {
     kind: CellActionKind,

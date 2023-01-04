@@ -15,11 +15,11 @@ import {
 } from "./const"
 import {globalVars} from "../../inc/const"
 import Bot from "./bot"
-import FixedBot from "./fixed-bot"
 import {randomInt} from "../../funcs/buttons"
 import {randomColor, turn4Left, turn4Right} from "../../funcs/utils"
 import {BotKind, CellActionKind} from "./enums"
 import {FourDirection} from "../../enums/four-direction"
+import MainBot from "./main-bot"
 
 
 export default class FullEvo extends CellEngine {
@@ -49,6 +49,20 @@ export default class FullEvo extends CellEngine {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
         this.drawCells()
         this.drawBots()
+        this.drawBotsGenome()
+    }
+
+    drawBotsGenome(): void {
+        // Вывести геном самых популярных ботов
+        if (this.cycle % 1000 === 0) {
+            const bots = Array.from(this.bots.values())
+            bots.sort((a, b) => b.energy - a.energy)
+            bots.forEach((bot, i) => {
+                if (i < 5) {
+                    console.log("%c"+JSON.stringify((bot as MainBot).gens), "background-color: " + bot.color + "; color: " + bot.borderColor + ";font-size:10pt;")
+                }
+            })
+        }
     }
 
 
@@ -160,12 +174,11 @@ export default class FullEvo extends CellEngine {
                         || (kinds[BotKind.Armor]===1 && bot.kind!==BotKind.Armor)
                         || bot.kind === BotKind.Leaf) {
                         bot.die()
-                        console.log("Collision", bot.kind, bot.engineIndex)
+                        //console.log("Collision", bot.kind, bot.engineIndex)
                     } else {
                         if (bot.kind === BotKind.Stem) {
                             if (stem===null)  stem = bot
                             else {
-                                console.log("Merge")
                                 stem.mergeStem(bot)
                                 stem.addEnergy(bot.energy)
                                 bot.die()
@@ -212,13 +225,17 @@ export default class FullEvo extends CellEngine {
                     if (d !== null) bot.position = d
                     break
                 case CellActionKind.TurnLeft:
-                    //cell.direction = cell.direction.turnLeft()
-                    bot.direction = turn4Left(bot.direction)
-                    bot.delEnergy(turnEnergy)
+
+                    if (bot.kind === BotKind.Stem || bot.getHost()===null) {
+                        bot.direction = turn4Left(bot.direction)
+                        bot.delEnergy(turnEnergy)
+                    }
                     break
                 case CellActionKind.TurnRight:
-                    bot.direction = turn4Right(bot.direction)
-                    bot.delEnergy(turnEnergy)
+                    if (bot.kind === BotKind.Stem || bot.getHost()===null) {
+                        bot.direction = turn4Right(bot.direction)
+                        bot.delEnergy(turnEnergy)
+                    }
                     break
                 case CellActionKind.MainAction:
                     this.botMainAction(bot, bot.lastAction.param)
@@ -226,9 +243,8 @@ export default class FullEvo extends CellEngine {
                     break
                 }
             }
-            console.log("Bot", bot.engineIndex, bot.energy, "action", bot.lastAction)
+            //console.log("Bot", bot.engineIndex, bot.energy, bot.kind, bot.lastAction)
             bot.lastAction = null
-
         })
 
         this.indexBots()
@@ -277,7 +293,7 @@ export default class FullEvo extends CellEngine {
                 const cell = this.getFieldCell(d)
                 if (cell && bot.energy>minBotEnergy*2) {
                     const e = Math.floor(bot.energy / 2)
-                    const newBot = new FixedBot(this, this.nextBotId, param%3, d!, e, bot)
+                    const newBot = new MainBot(this, this.nextBotId, param%3, d!, e, bot)
                     bot.delEnergy(e)
                     this.addBot(newBot)
                 }
@@ -291,135 +307,9 @@ export default class FullEvo extends CellEngine {
         if (cell) {
             cell.organic += amount
             if (cell.organic > maxCellOrganic) cell.organic = maxCellOrganic
-            console.log("Add organic", pos, amount, cell.organic)
+            //console.log("Add organic", pos, amount, cell.organic)
         }
     }
-
-
-    /*
-            for (let i = 0; i < totalBots; i++) {
-                const bot = this.bots[i]
-
-                let moveDirection: FourDirection | null = null
-                // Передвигается ли весь организм целиком. В противном случае клетка отделается.
-                let needMove = true
-                const actions: CellAction[] = []
-                const cnt = bot.getCellsCount()
-
-                for (let j = 0; j < cnt; j++) {
-                    const action = bot.getCellAction(j)
-                    actions.push(action)
-                    if (needMove) {
-                        if (action.kind === CellActionKind.Move) {
-                            const direction = bot.getCell(j).direction
-                            if (moveDirection == null) {
-                                moveDirection = bot.getCell(j).direction
-                            } else if (moveDirection !== direction) {
-                                needMove = false
-                            }
-                        } else needMove = false
-                    }
-                }
-
-                console.log("bot", i, cnt, needMove, bot.energy, bot.getCellEnergy())
-
-
-                for (let j = 0; j < cnt; j++) {
-                    const action = actions[j]
-                    const cell = bot.getCell(j)
-                    const kind = cell.getKind()
-
-                    console.log("Cell: "+j, action, "Childrens: "+cell.children.length)
-
-                    switch (action.kind) {
-                    case CellActionKind.TurnLeft:
-                        //cell.direction = cell.direction.turnLeft()
-                        cell.direction = turn4Left(cell.direction)
-                        bot.energy -= 2
-                        break
-                    case CellActionKind.TurnRight:
-                        cell.direction = turn4Right(cell.direction)
-                        bot.energy -= 2
-                        break
-                    case CellActionKind.MainAction:
-                        // Если не удалось сделать основное действие, то считаем за простой
-                        bot.energy -= (bot.doCellMainAction(j, action.param) ? 3 : 1)
-                        break
-                    case CellActionKind.Move:
-                        const d = this.pointByDirection(cell.position, cell.direction)
-                        if (d!==null) {
-                            const fieldCell = this.getFieldCell(d)
-                            if (fieldCell!==null) {
-                                const targetBot = fieldCell.bot
-                                // Если есть бот
-                                if (targetBot && targetBot.isCellAlive(fieldCell.botCellIndex)) {
-                                    // Если клетка своего организма, ничего не делаем
-                                    if (targetBot !== bot) {
-                                        const targetCell = targetBot.getCell(fieldCell.botCellIndex)
-                                        const targetKind = targetCell.getKind()
-                                        if (targetKind !== BotKind.Armor || kind === BotKind.Armor) {
-                                            // Уничтожаются обе клетки
-                                            console.log("Move with Collision")
-                                            targetBot.kill(fieldCell.botCellIndex)
-                                            bot.kill(j)
-                                        } else {
-                                            // Уничтожается только атакующая клетка если нарвались обчной клеткой на броню
-                                            console.log("Collision...")
-                                            bot.kill(j)
-                                        }
-                                    } else {
-                                        if (needMove) cell.position = d
-                                        else   console.log("Self cell, cant move")
-                                    }
-                                } else
-                                // Если нет бота и бот не двигался целиком, то клетка отделяется
-                                if (!needMove) {
-                                    // Создаем нового бота для стволовой клетки
-                                    if (kind === BotKind.Stem)  {
-                                        // Отделится можно только если нет потомков
-                                        if (!cell.haveChildren()) {
-                                            const e = cell.getEnergy()
-                                            if (e>=minCellEnergyForReproduction) {
-                                                console.log("Create new bot", e)
-                                                this.addBot(d, e, cell.direction, bot)
-                                                // У родителя убираем эту клетку, так как она в новом боте
-                                                bot.kill(j)
-                                            }
-                                        } else {
-                                            console.log("Have children, cant create new by separate")
-                                        }
-                                    } else {
-                                        // Иначе клетка погибает
-                                        bot.kill(j)
-                                    }
-                                } else {
-                                    cell.position = d
-                                }
-
-                            }
-                        }
-                        bot.energy -= 3
-                        break
-                    case CellActionKind.Idle:
-                        bot.energy -= 1
-                        break
-                    }
-                }
-
-            }
-
-            for (let i = 0; i < this.bots.length; i++) {
-                const bot = this.bots[i]
-
-                if (bot.getCellEnergy()<minCellEnergy) {
-                    console.log("Die", i, bot.getCellEnergy(), bot.energy)
-                    bot.kill(0)
-                }
-            }
-
-            this.bots = this.bots.filter(bot => (bot.energy>0 && bot.getCellsCount()>0))
-
-             */
 
 
 
@@ -444,8 +334,7 @@ export default class FullEvo extends CellEngine {
     }
 
     addRandomBot(position: Point): void {
-        console.log("Add Random")
-        const bot = new FixedBot(this,
+        const bot = new MainBot(this,
             this.nextBotId,
             BotKind.Stem,
             position,
@@ -459,7 +348,6 @@ export default class FullEvo extends CellEngine {
     }
 
     addBot(bot: Bot): void {
-        console.log("Add bot", bot)
         this.bots.set(this.nextBotId, bot)
         this.nextBotId++
     }

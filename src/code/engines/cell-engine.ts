@@ -4,8 +4,8 @@ import Point from "../types/point"
 import {FourDirection} from "../enums/four-direction"
 
 
-export const drawCellSize = 16
-export const cellPadding = 1
+export const drawCellSize = 11
+export const cellPadding = 0
 export const innerCellSize = drawCellSize - cellPadding * 2
 
 export default abstract class CellEngine extends Engine2d {

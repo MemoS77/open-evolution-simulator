@@ -16,9 +16,9 @@ export default abstract class Bot {
     position: Point
     borderColor: string
     direction: FourDirection
-    rX: number
-    rY: number
-    rZ: number
+    rX = 0
+    rY = 0
+    rZ = 0
     readonly engine: FullEvo
     kind: BotKind
     engineIndex: number
@@ -48,7 +48,7 @@ export default abstract class Bot {
         this.rZ = 0
         this.engineIndex = index
         this.lastAction = null
-        if (parentBot) this.init(parentBot)
+        this.init(parentBot)
     }
 
     addEnergy(energy: number): void {
@@ -60,6 +60,27 @@ export default abstract class Bot {
         if (this.energy >= maxBotEnergy) this.die()
     }
 
+    // Почитать рекурсивно сколько предков у бота
+    getParentsCount(cnt = 0): number {
+        const parent = this.getHost()
+        if (parent) {
+            cnt++
+            if (cnt>50) return cnt // защита от зацикливания
+            return parent.getParentsCount(cnt)
+        }
+        return cnt
+    }
+
+    isParent(bot: Bot, cnt = 0): boolean {
+        cnt++
+        if (cnt>50) return true
+        const host = this.getHost()
+        if (host === bot) return true
+        if (host) return host.isParent(bot, cnt)
+        return false
+    }
+
+
 
     // Избыток энергии отправляется боту в противоположном направлении
     sendEnergy(): void {
@@ -68,7 +89,7 @@ export default abstract class Bot {
             const energy = Math.floor((this.energy - host.energy)/2)
             this.delEnergy(energy)
             host.addEnergy(energy)
-            console.log("send energy", energy, "from", this.engineIndex, "to", host.engineIndex)
+            //console.log("send energy", energy, "from", this.engineIndex, "to", host.engineIndex)
         }
     }
 
@@ -122,7 +143,7 @@ export default abstract class Bot {
 
 
     // Создание начальной клетки. Возможна мутация и прочее
-    abstract init(parentBot?: Bot): void
+    abstract init(parentBot: Bot | null): void
 
     // Действие если клетка выжила при столкновении (выживает одна).
     // Например, получить информацию о другой для полового размножения
