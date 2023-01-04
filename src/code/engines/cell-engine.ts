@@ -63,7 +63,6 @@ export default abstract class CellEngine extends Engine2d {
 
 
 
-
     abstract initCells(): void
     abstract initBots(): void
 

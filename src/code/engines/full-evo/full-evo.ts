@@ -19,7 +19,7 @@ import FixedBot from "./fixed-bot"
 import {randomInt} from "../../funcs/buttons"
 import {randomColor, turn4Left, turn4Right} from "../../funcs/utils"
 import {BotKind, CellActionKind} from "./enums"
-
+import {FourDirection} from "../../enums/four-direction"
 
 
 export default class FullEvo extends CellEngine {
@@ -39,9 +39,10 @@ export default class FullEvo extends CellEngine {
 
     removeBot(bot: Bot): void {
         if (bot.engineIndex >= 0)  {
-            const e = Math.min(Math.floor(bot.energy/3), minBotEnergy)
+            const e = Math.max(Math.floor(bot.energy/4), minBotEnergy)
+            bot.energy = 0
             // В почве остается немного органики
-            this.cells[bot.position.x][bot.position.y].organic += e
+            this.addOrganic(bot.position, e)
             this.bots.delete(bot.engineIndex)
         }
     }
@@ -54,14 +55,17 @@ export default class FullEvo extends CellEngine {
 
 
     drawCells(): void {
+        const filter = globalVars.filterMode
         this.cells.forEach((row, i) => {
             row.forEach((c, j) => {
                 this.ctx.fillStyle = "black"
 
-                if (globalVars.filterMode === 0) {
-                    const green = Math.floor((c.energy / maxPhotoEnergy) * 100)
-                    const blue = Math.floor((c.organic / maxCellOrganic) * 250)
-                    this.ctx.fillStyle = `rgb(0,${green},${blue})`
+
+                if (filter !==1) {
+                    const blue = (filter === 0 || filter === 2) ? Math.floor((c.energy / maxPhotoEnergy) * 150) : 0
+                    const red = (filter === 0 || filter === 3) ? Math.floor((c.organic / maxCellOrganic) * 250) : 0
+                    const green = Math.floor(blue * 0.8)
+                    this.ctx.fillStyle = `rgb(${red},${green},${blue})`
                 } else this.ctx.fillStyle = "rgb(0,0,0)"
 
                 const cx = i * drawCellSize + globalVars.camera.x + cellPadding
@@ -128,10 +132,14 @@ export default class FullEvo extends CellEngine {
 
     clearDeadBots(): void {
         this.bots.forEach(bot => {
-            if (!bot.isAlive()) {
-                this.removeBot(bot)
-            }
+            if (bot.energy<minBotEnergy) bot.die()
         })
+    }
+
+
+    // Обработать ботов на одной ячейке
+    workCollisions(): void {
+        //
     }
 
     override nextStep(): void {
@@ -144,33 +152,98 @@ export default class FullEvo extends CellEngine {
 
         // Теперь обработаем все действия ботов
         this.bots.forEach(bot => {
-            switch (bot.lastAction.kind) {
-            case CellActionKind.Idle:
-                bot.energy -= idleEnergy
-                break
-            case CellActionKind.Move:
-                bot.energy -= moveEnergy
-                const d = this.pointByDirection(bot.position, bot.direction)
-                if (d !== null) bot.position = d
-                break
-            case CellActionKind.TurnLeft:
-                //cell.direction = cell.direction.turnLeft()
-                bot.direction = turn4Left(bot.direction)
-                bot.energy -= turnEnergy
-                break
-            case CellActionKind.TurnRight:
-                bot.direction = turn4Right(bot.direction)
-                bot.energy -= turnEnergy
-                break
-            case CellActionKind.MainAction:
-                bot.energy -= mainActionEnergy
-                break
+            if (bot.lastAction) {
+                switch (bot.lastAction.kind) {
+                case CellActionKind.Idle:
+                    bot.delEnergy(idleEnergy)
+
+                    break
+                case CellActionKind.Move:
+                    bot.delEnergy(moveEnergy)
+                    const d = this.pointByDirection(bot.position, bot.direction)
+                    if (d !== null) bot.position = d
+                    break
+                case CellActionKind.TurnLeft:
+                    //cell.direction = cell.direction.turnLeft()
+                    bot.direction = turn4Left(bot.direction)
+                    bot.delEnergy(turnEnergy)
+                    break
+                case CellActionKind.TurnRight:
+                    bot.direction = turn4Right(bot.direction)
+                    bot.delEnergy(turnEnergy)
+                    break
+                case CellActionKind.MainAction:
+                    this.botMainAction(bot, bot.lastAction.param)
+                    bot.delEnergy(mainActionEnergy)
+                    break
+                }
             }
-            console.log("Bot", bot.engineIndex, bot.energy, "action", bot.lastAction.kind)
+            console.log("Bot", bot.engineIndex, bot.energy, "action", bot.lastAction)
+            bot.lastAction = null
+
         })
 
-        this.clearDeadBots()
+        this.workCollisions()
+        //this.clearDeadBots()
         this.draw()
+    }
+
+
+
+    isDirectionFree(pos: Point, direction: FourDirection): boolean {
+        const d = this.pointByDirection(pos, direction)
+        if (!d) return false
+        if (this.cells[d.x][d.y].bots.length === 0) return true
+        return false
+    }
+
+
+
+    private botMainAction(bot: Bot, param: number): void {
+        const cell = this.getFieldCell(bot.position)
+        switch (bot.kind) {
+        case BotKind.Leaf:
+            // Получаем энергию из фотосинтеза по числу свободных клеток вокруг
+            if (cell && cell.energy>0) {
+                let c = 0
+                if (this.isDirectionFree(bot.position, FourDirection.Up)) c++
+                if (this.isDirectionFree(bot.position, FourDirection.Down)) c++
+                if (this.isDirectionFree(bot.position, FourDirection.Left)) c++
+                if (this.isDirectionFree(bot.position, FourDirection.Right)) c++
+                bot.addEnergy(c * cell.energy)
+            }
+            break
+        case BotKind.Armor:
+
+            if (cell && cell.energy > 0) {
+                // Съедаем органику, соразмерно энергии бота
+                const e = Math.min(Math.max(Math.floor(bot.energy / 2), minBotEnergy), cell.organic)
+                cell.organic -= e
+                bot.addEnergy(e)
+            }
+            break
+        case BotKind.Stem:
+            const d = this.pointByDirection(bot.position, bot.direction)
+            if (d !== null) {
+                const cell = this.getFieldCell(d)
+                if (cell && bot.energy>minBotEnergy*2) {
+                    const e = Math.floor(bot.energy / 2)
+                    const newBot = new FixedBot(this, this.nextBotId, param%3, d!, e, bot)
+                    bot.delEnergy(e)
+                    this.addBot(newBot)
+                }
+            }
+            break
+        }
+    }
+
+    addOrganic(pos: Point, amount: number): void {
+        const cell = this.getFieldCell(pos)
+        if (cell) {
+            cell.organic += amount
+            if (cell.organic > maxCellOrganic) cell.organic = maxCellOrganic
+            console.log("Add organic", pos, amount, cell.organic)
+        }
     }
 
 
@@ -308,28 +381,30 @@ export default class FullEvo extends CellEngine {
             for (let j = 0; j < this.params.size.y; j++) {
                 this.cells[i][j] = {
                     energy: Math.round((this.params.size.y-j)/this.params.size.y*maxPhotoEnergy),
-                    organic: randomInt(0, Math.round(maxCellOrganic/5)),
+                    organic: randomInt(0, Math.round(maxCellOrganic/8)),
                     bots: []
                 }
-                console.log(    this.cells[i][j])
+
             }
         }
     }
 
 
     getFilterTitles(): string[] {
-        return ["With energy & organic", "No energy & organic"]
+        return ["With energy & organic", "No energy & organic", "Energy", "Organic"]
     }
 
     addRandomBot(position: Point): void {
+        console.log("Add Random")
         const bot = new FixedBot(this,
             this.nextBotId,
             BotKind.Stem,
             position,
-            randomColor(),
-            randomColor(),
             newBotEnergy,
-            randomInt(0, 3)
+            null,
+            randomInt(0, 3),
+            randomColor(),
+            randomColor()
         )
         this.addBot(bot)
     }

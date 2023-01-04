@@ -7,6 +7,7 @@ import stem from "./cell-draw/stem"
 import leaf from "./cell-draw/leaf"
 import armor from "./cell-draw/armor"
 import {CellAction} from "./types"
+import {criticalBotEnergy, maxBotEnergy, minBotEnergy} from "./const"
 
 // Общий класс для всех возможных ботов
 export default abstract class Bot {
@@ -21,7 +22,7 @@ export default abstract class Bot {
     readonly engine: FullEvo
     kind: BotKind
     engineIndex: number
-    lastAction: CellAction
+    lastAction: CellAction | null
 
 
 
@@ -29,23 +30,52 @@ export default abstract class Bot {
         index: number,
         kind: BotKind,
         position: Point,
-        color: string,
-        borderColor: string,
         energy: number,
-        direction: FourDirection,
-        parentBot?: Bot) {
+        parentBot: Bot | null,
+        direction?: FourDirection,
+        color?: string,
+        borderColor?: string,
+    ) {
         this.kind = kind
-        this.color = color
-        this.borderColor = borderColor
         this.energy = energy
         this.engine = engine
-        this.direction = direction
         this.position = position
+        this.color = color ? color : parentBot!.color
+        this.borderColor = borderColor ? borderColor : parentBot!.borderColor
+        this.direction = (direction!==undefined) ? direction : parentBot!.direction
         this.rX = 0
         this.rY = 0
         this.rZ = 0
         this.engineIndex = index
-        this.init(parentBot)
+        this.lastAction = null
+        if (parentBot) this.init(parentBot)
+    }
+
+    addEnergy(energy: number): void {
+        if (this.energy > criticalBotEnergy) {
+            this.energy += Math.min(minBotEnergy*2, energy)
+        } else if (this.energy+energy > criticalBotEnergy) this.energy = criticalBotEnergy
+        else  this.energy += energy
+        this.sendEnergy()
+        if (this.energy >= maxBotEnergy) this.die()
+    }
+
+
+    // Избыток энергии отправляется боту в противоположном направлении
+    sendEnergy(): void {
+        const host = this.getHost()
+        if (host && (host.energy+1<this.energy)) {
+            const energy = Math.floor((this.energy - host.energy)/2)
+            this.delEnergy(energy)
+            host.addEnergy(energy)
+            console.log("send energy", energy, "from", this.engineIndex, "to", host.engineIndex)
+        }
+    }
+
+
+    delEnergy(energy: number): void {
+        this.energy -= energy
+        if (this.energy < minBotEnergy) this.die()
     }
 
 

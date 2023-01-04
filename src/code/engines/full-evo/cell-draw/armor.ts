@@ -6,31 +6,27 @@ import {initCellDraw} from "./common"
 export default function armor(ctx: CanvasRenderingContext2D, direction: FourDirection, position: Point,  commonColor: string, color: string): void {
     const {x, y} = initCellDraw(ctx, position, commonColor, color)
     ctx.beginPath()
-    // Прямоугольник в зависимости от this.direction
+    // Треугольник в зависимости от this.direction
     switch (direction) {
     case FourDirection.Up:
-        ctx.moveTo(x+ innerCellSize*0.25, y + innerCellSize)
-        ctx.lineTo(x + innerCellSize*0.25, y)
-        ctx.lineTo(x + innerCellSize*0.75, y )
-        ctx.lineTo(x + innerCellSize*0.75, y + innerCellSize)
+        ctx.moveTo(x, y + innerCellSize)
+        ctx.lineTo(x + innerCellSize / 2, y)
+        ctx.lineTo(x + innerCellSize, y + innerCellSize)
         break
     case FourDirection.Right:
-        ctx.moveTo(x, y + innerCellSize*0.25)
-        ctx.lineTo(x + innerCellSize, y + innerCellSize*0.25)
-        ctx.lineTo(x + innerCellSize, y + innerCellSize*0.75)
-        ctx.lineTo(x, y + innerCellSize*0.75)
+        ctx.moveTo(x, y)
+        ctx.lineTo(x + innerCellSize, y + innerCellSize / 2)
+        ctx.lineTo(x, y + innerCellSize)
         break
     case FourDirection.Down:
-        ctx.moveTo(x + innerCellSize*0.25, y)
-        ctx.lineTo(x + innerCellSize*0.25, y + innerCellSize)
-        ctx.lineTo(x + innerCellSize*0.75, y + innerCellSize)
-        ctx.lineTo(x + innerCellSize*0.75, y)
+        ctx.moveTo(x, y)
+        ctx.lineTo(x + innerCellSize / 2, y + innerCellSize)
+        ctx.lineTo(x + innerCellSize, y)
         break
     case FourDirection.Left:
-        ctx.moveTo(x + innerCellSize, y + innerCellSize*0.25)
-        ctx.lineTo(x, y + innerCellSize*0.25)
-        ctx.lineTo(x, y + innerCellSize*0.75)
-        ctx.lineTo(x + innerCellSize, y + innerCellSize*0.75)
+        ctx.moveTo(x + innerCellSize, y)
+        ctx.lineTo(x, y + innerCellSize / 2)
+        ctx.lineTo(x + innerCellSize, y + innerCellSize)
         break
     }
     ctx.fill()
