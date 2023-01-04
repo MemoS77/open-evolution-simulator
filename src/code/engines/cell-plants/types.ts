@@ -19,12 +19,5 @@ export type CellAction = {
     param: number
 }
 
-export type EnemyGen = {
-    num: 0 | 1 | 2 | 3,
-    gen: Gen
-}
 
-export type Gen = number[]
-
-export type Genome = Array<Gen>
 

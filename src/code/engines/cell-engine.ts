@@ -30,12 +30,13 @@ export default abstract class CellEngine extends Engine2d {
         return pos.x >= 0 && pos.x < this.params!.size.x && pos.y >= 0 && pos.y < this.params!.size.y
     }
 
+    /*
     getBorders(): Point {
         return {
             x: this.params!.size.x,
             y: this.params!.size.y
         }
-    }
+    }*/
 
     pointByDirection(position: Point, direction: FourDirection, steps = 1): Point | null {
         const {x, y} = position
@@ -54,10 +55,11 @@ export default abstract class CellEngine extends Engine2d {
             res = {x: x + steps, y}
             break
         }
-
         if (this.isCellExists(res)) return res
         return null
     }
+
+
 
 
 

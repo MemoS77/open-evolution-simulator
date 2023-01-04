@@ -8,13 +8,20 @@ export const maxGenSteps = 300
 export const minGenLength = 10
 
 // Максимальная энергия на одну клетку организма
-export const maxCellBotEnergy = 200
+export const maxCellBotEnergy = 400
 
 // Энергия нового бота
-export const newBotEnergy = 128
+export const newBotEnergy = 1256
 
 // Энергия от солнца не более на одну свободную клетку
 export const maxPhotoEnergy = 16
+
+// - минимальная энергия для размножения
+export const minCellEnergyForReproduction = 9
+
+// - минимальная средняя энергия клетки
+export const minCellEnergy = 3
+
 
 // Максимально возможное накопление энергии, после которого в ячейке появляется яд
 export const poisonEnergy = 500

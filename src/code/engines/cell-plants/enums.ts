@@ -2,7 +2,8 @@ export enum CellActionKind {
     Idle,
     MainAction,
     Move,
-    SelfDestruct,
+    TurnLeft,
+    TurnRight,
 }
 
 

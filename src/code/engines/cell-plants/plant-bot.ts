@@ -1,49 +1,72 @@
-import {randomInt} from "../../funcs/buttons"
-import {maxGenLength, minGenLength} from "./const"
-import {CellAction, Genome} from "./types"
+import {CellAction} from "./types"
 import Point from "../../types/point"
-import BotCellStem from "./bot-cell-stem"
 import Bot from "./bot"
-import BotCell from "./bot-cell"
 import {FourDirection} from "../../enums/four-direction"
+import PlantGenome from "./plant-genome"
+import {BotCellKind} from "./enums"
+import PlantBotCell from "./plant-bot-cell"
+
 
 
 export default class PlantBot extends Bot {
-    // Общий регистр для всех клеток
-    private rG = 0
-    override cells: BotCell[]
-    private genome: Genome
+    override cells: PlantBotCell[]
+    private genome: PlantGenome
 
-    override getCellAction(): CellAction {
-        return {
-            kind: 2,
-            param: 0
+
+
+
+    override doCellMainAction(cellIndex: number, param: number): boolean {
+        const cell = this.cells[cellIndex]
+
+        switch (cell.getKind()) {
+        case BotCellKind.Stem:
+            const p = this.engine.pointByDirection(cell.position, cell.direction)
+            if (p) {
+                const fc = this.engine.getFieldCell(p)
+                if (fc && !fc.bot) {
+                    // Произвести новую клетку если свободно
+                    cell.children.push(this.addCell( param%4, p, cell.direction))
+                }
+            }
+            break
         }
+        return false
     }
 
-    override init(position: Point, direction: FourDirection) {
-        this.rG = 0
-        this.generateGenome()
-        this.cells.push(new BotCellStem(
+    override getCellAction(cellIndex: number): CellAction {
+        const cell = this.cells[cellIndex]
+        return this.genome.getAction(cell.gen)
+    }
+
+
+    addCell(kind: BotCellKind, position: Point, direction: FourDirection): number {
+        const newBot = new PlantBotCell(
             direction,
             position,
-            this
-        ))
+            this,
+            kind,
+            this.genome.gens[kind]
+        )
+        this.engine.cells[position.x][position.y].bot = this
+        const index = this.cells.length
+        this.engine.cells[position.x][position.y].botCellIndex = this.cells.length
+        this.cells.push(newBot)
+        return index
     }
 
-    public generateGenome(): void {
+    override init(position: Point, direction: FourDirection, parentBot1?: PlantBot): void {
+        this.genome = new PlantGenome(parentBot1?.genome)
         this.cells = []
-        this.genome = []
-        for (let g=0; g<5; g++) {
-            this.genome[g] = []
-            for (let i = 0; i < randomInt(minGenLength, maxGenLength); i++) {
-                this.genome[g].push(Math.random())
-            }
-        }
+        this.addCell(BotCellKind.Stem, position, direction)
     }
+
 
     getBotKind(): string {
         return "Plant Bot"
+    }
+
+    getColor(): string {
+        return this.genome.color
     }
 
 }

@@ -3,11 +3,11 @@ import {paramsList, PlantsEngineParams} from "./params-list"
 import {Cell, CellAction} from "./types"
 import CellEngine, {cellPadding, drawCellSize, innerCellSize} from "../cell-engine"
 import Point from "../../types/point"
-import {maxPhotoEnergy, newBotEnergy, poisonEnergy} from "./const"
+import {maxPhotoEnergy, minCellEnergy, minCellEnergyForReproduction, newBotEnergy, poisonEnergy} from "./const"
 import {globalVars} from "../../inc/const"
 import Bot from "./bot"
 import PlantBot from "./plant-bot"
-import {randomColor} from "../../funcs/utils"
+import {randomColor, turn4Left, turn4Right} from "../../funcs/utils"
 import {randomInt} from "../../funcs/buttons"
 import {BotCellKind, CellActionKind} from "./enums"
 import {FourDirection} from "../../enums/four-direction"
@@ -55,8 +55,9 @@ export default class CellPlants extends CellEngine {
         return null
     }
 
+
     /*
-    getCellByDirection(position: Point, direction: FourDirection, steps = 1): Cell | null {
+    getPointIfEmpty(position: Point, direction: FourDirection, steps = 1): Cell | null {
         const point = this.pointByDirection(position, direction, steps)
         if (point!=null) return this.getFieldCell(point)
         return null
@@ -93,12 +94,16 @@ export default class CellPlants extends CellEngine {
 
 
 
-    override nextStep(): void {
 
+
+    override nextStep(): void {
         this.indexBots()
 
-        for (let i = 0; i < this.bots.length; i++) {
+        const totalBots = this.bots.length
+
+        for (let i = 0; i < totalBots; i++) {
             const bot = this.bots[i]
+
             /** Составляем список действий всех клеток и проверяем
              * движутся ли клетки в одну сторону
              */
@@ -106,7 +111,9 @@ export default class CellPlants extends CellEngine {
             // Передвигается ли весь организм целиком. В противном случае клетка отделается.
             let needMove = true
             const actions: CellAction[] = []
-            for (let j = 0; j < this.bots[i].getCellsCount(); j++) {
+            const cnt = bot.getCellsCount()
+
+            for (let j = 0; j < cnt; j++) {
                 const action = bot.getCellAction(j)
                 actions.push(action)
                 if (needMove) {
@@ -121,31 +128,55 @@ export default class CellPlants extends CellEngine {
                 }
             }
 
+            console.log("bot", i, cnt, needMove, bot.energy, bot.getCellEnergy())
 
-            for (let j = 0; j < this.bots[i].getCellsCount(); j++) {
+
+            for (let j = 0; j < cnt; j++) {
                 const action = actions[j]
                 const cell = bot.getCell(j)
                 const kind = cell.getKind()
 
+                console.log("Cell: "+j, action, "Childrens: "+cell.children.length)
+
                 switch (action.kind) {
+                case CellActionKind.TurnLeft:
+                    //cell.direction = cell.direction.turnLeft()
+                    cell.direction = turn4Left(cell.direction)
+                    bot.energy -= 2
+                    break
+                case CellActionKind.TurnRight:
+                    cell.direction = turn4Right(cell.direction)
+                    bot.energy -= 2
+                    break
                 case CellActionKind.MainAction:
-                    bot.energy -= 3
+                    // Если не удалось сделать основное действие, то считаем за простой
+                    bot.energy -= (bot.doCellMainAction(j, action.param) ? 3 : 1)
                     break
                 case CellActionKind.Move:
                     const d = this.pointByDirection(cell.position, cell.direction)
                     if (d!==null) {
                         const fieldCell = this.getFieldCell(d)
                         if (fieldCell!==null) {
-                            cell.position = d
+                            const targetBot = fieldCell.bot
                             // Если есть бот
-                            if (fieldCell.bot) {
-                                const targetBot = fieldCell.bot
-                                const targetCell = fieldCell.bot.getCell(fieldCell.botCellIndex)
-                                const targetKind = targetCell.getKind()
-                                if (targetKind!==BotCellKind.Armor || kind===BotCellKind.Armor) {
-                                    // Уничтожаются обе клетки
-                                    targetBot.kill(fieldCell.botCellIndex)
-                                    bot.kill(j)
+                            if (targetBot && targetBot.isCellAlive(fieldCell.botCellIndex)) {
+                                // Если клетка своего организма, ничего не делаем
+                                if (targetBot !== bot) {
+                                    const targetCell = targetBot.getCell(fieldCell.botCellIndex)
+                                    const targetKind = targetCell.getKind()
+                                    if (targetKind !== BotCellKind.Armor || kind === BotCellKind.Armor) {
+                                        // Уничтожаются обе клетки
+                                        console.log("Move with Collision")
+                                        targetBot.kill(fieldCell.botCellIndex)
+                                        bot.kill(j)
+                                    } else {
+                                        // Уничтожается только атакующая клетка если нарвались обчной клеткой на броню
+                                        console.log("Collision...")
+                                        bot.kill(j)
+                                    }
+                                } else {
+                                    if (needMove) cell.position = d
+                                    else   console.log("Self cell, cant move")
                                 }
                             } else
                             // Если нет бота и бот не двигался целиком, то клетка отделяется
@@ -154,14 +185,22 @@ export default class CellPlants extends CellEngine {
                                 if (kind === BotCellKind.Stem)  {
                                     // Отделится можно только если нет потомков
                                     if (!cell.haveChildren()) {
-                                        this.addBot(d, cell.getEnergy(), cell.direction)
-                                        // У родителя убираем эту клетку, так как она в новом боте
-                                        bot.kill(j)
+                                        const e = cell.getEnergy()
+                                        if (e>=minCellEnergyForReproduction) {
+                                            console.log("Create new bot", e)
+                                            this.addBot(d, e, cell.direction, bot)
+                                            // У родителя убираем эту клетку, так как она в новом боте
+                                            bot.kill(j)
+                                        }
+                                    } else {
+                                        console.log("Have children, cant create new by separate")
                                     }
                                 } else {
                                     // Иначе клетка погибает
                                     bot.kill(j)
                                 }
+                            } else {
+                                cell.position = d
                             }
 
                         }
@@ -174,6 +213,18 @@ export default class CellPlants extends CellEngine {
                 }
             }
         }
+
+        for (let i = 0; i < this.bots.length; i++) {
+            const bot = this.bots[i]
+
+            if (bot.getCellEnergy()<minCellEnergy) {
+                console.log("Die", i, bot.getCellEnergy(), bot.energy)
+                bot.kill(0)
+            }
+        }
+
+        this.bots = this.bots.filter(bot => (bot.energy>0 && bot.getCellsCount()>0))
+
         this.draw()
     }
 
@@ -195,11 +246,11 @@ export default class CellPlants extends CellEngine {
         }
     }
 
-    addBot(position: Point, energy?: number, direction?: FourDirection): void {
-        const newBot = new PlantBot(this, position, randomColor(), energy ?? newBotEnergy, direction ?? randomInt(0, 3))
+    addBot(position: Point, energy?: number, direction?: FourDirection, parentBot1?: Bot, parentBot2?: Bot): void {
+        const newBot = new PlantBot(this, position, randomColor(), energy ?? newBotEnergy, direction ?? randomInt(0, 3), parentBot1, parentBot2)
         this.bots.push(newBot)
-        this.cells[position.x][position.y].bot = newBot
-        this.cells[position.x][position.y].botCellIndex = 0
+        //this.cells[position.x][position.y].bot = newBot
+        //this.cells[position.x][position.y].botCellIndex = 0
     }
 
 
