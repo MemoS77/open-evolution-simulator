@@ -21,10 +21,12 @@ export default abstract class Bot {
     readonly engine: FullEvo
     kind: BotKind
     engineIndex: number
+    lastAction: CellAction
 
 
 
     constructor(engine: FullEvo,
+        index: number,
         kind: BotKind,
         position: Point,
         color: string,
@@ -42,7 +44,7 @@ export default abstract class Bot {
         this.rX = 0
         this.rY = 0
         this.rZ = 0
-        this.engineIndex = -1
+        this.engineIndex = index
         this.init(parentBot)
     }
 
@@ -95,7 +97,7 @@ export default abstract class Bot {
     // Действие если клетка выжила при столкновении (выживает одна).
     // Например, получить информацию о другой для полового размножения
     protected abstract onCollisionAlive(bot: Bot[]): void
-    protected abstract getAction(): CellAction
+    abstract getAction(): CellAction
 
 }
 
