@@ -8,17 +8,14 @@ export enum CellActionKind {
 
 
 
-export enum BotCellKind {
+export enum BotKind {
     // Стволовая клетка
     Stem,
 
     // Листовая клетка
     Leaf,
 
-    // Рот
-    Mouth,
-
-    // Репродуктивная клетка
+    // Броня/рот/шип
     Armor,
 
 

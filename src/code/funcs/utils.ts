@@ -29,3 +29,16 @@ export function turn4Right(direction: FourDirection): FourDirection {
         return FourDirection.Down
     }
 }
+
+export function invert4Direction(direction: FourDirection): FourDirection {
+    switch (direction) {
+    case FourDirection.Up:
+        return FourDirection.Down
+    case FourDirection.Down:
+        return FourDirection.Up
+    case FourDirection.Left:
+        return FourDirection.Right
+    case FourDirection.Right:
+        return FourDirection.Left
+    }
+}
