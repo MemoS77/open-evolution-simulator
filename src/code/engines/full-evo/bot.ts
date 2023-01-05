@@ -58,7 +58,7 @@ export default abstract class Bot {
         else */
         this.energy += energy
         this.sendEnergy()
-        if (this.energy >= maxBotEnergy) this.die()
+        if (this.energy >= maxBotEnergy)  this.energy = maxBotEnergy // this.die()
     }
 
 

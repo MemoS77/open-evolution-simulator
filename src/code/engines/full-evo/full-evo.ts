@@ -8,7 +8,7 @@ import {
     mainActionEnergy,
     maxCellOrganic, maxNotGrowSteps, maxOrganicForPoison,
     maxPhotoEnergy,
-    minBotEnergy,
+    minBotEnergy, minPhotoEnergy,
     moveEnergy,
     newBotEnergy,
     turnEnergy
@@ -52,7 +52,7 @@ export default class FullEvo extends CellEngine {
 
     removeBot(bot: Bot): void {
         if (bot.engineIndex >= 0)  {
-            const e = Math.max(Math.floor(bot.energy/10), minBotEnergy)
+            const e = Math.max(Math.floor(bot.energy/5), minBotEnergy)
             bot.energy = 0
             // В почве остается немного органики
             this.addOrganic(bot.position, e)
@@ -290,7 +290,7 @@ export default class FullEvo extends CellEngine {
     }
 
     override nextStep(): void {
-
+        this.setCurrentCellEnergy()
         this.indexBots()
 
         // Сначала сделаем все действия ботов, так они действуют одновременно
@@ -456,26 +456,56 @@ export default class FullEvo extends CellEngine {
 
     override initCells(): void {
         this.cells = []
-        let minZone = -1
-        let maxZone = -1
-        if (this.params.conf.centerNotEnergy) {
-            minZone = this.params.size.x*0.45
-            maxZone = this.params.size.x*0.55
-
-        }
-
         for (let i = 0; i < this.params.size.x; i++) {
             this.cells[i] = []
             for (let j = 0; j < this.params.size.y; j++) {
                 this.cells[i][j] = {
-                    energy: (i>=minZone && i<=maxZone) ? 0 : Math.round((this.params.size.y-j)/this.params.size.y*maxPhotoEnergy),
+                    energy: maxPhotoEnergy,
                     organic: randomInt(0, Math.round(maxCellOrganic/10)),
                     bots: []
                 }
 
             }
         }
+
+        this.setCurrentCellEnergy()
     }
+
+
+    getSunEnergyByRow(x: number): number {
+        // Освещение зависит от цикла солнца
+        return Math.round((maxPhotoEnergy-minPhotoEnergy)*(Math.sin(
+            (this.cycle/200 + x * 2 * Math.PI / this.params.size.x)
+        )+1))+minPhotoEnergy
+    }
+
+
+    setCurrentCellEnergy(): void {
+        let minZoneX = -1
+        let maxZoneX = -1
+        let minZoneY = -1
+        let maxZoneY = -1
+
+        const cf = 0.53
+        const cf2 = 1-cf
+        if (this.params.conf.centerNotEnergy) {
+            minZoneX = this.params.size.x*cf2
+            maxZoneX = this.params.size.x*cf
+            minZoneY = this.params.size.y*cf2
+            maxZoneY = this.params.size.y*cf
+        }
+
+
+
+        for (let i = 0; i < this.params.size.x; i++) {
+            for (let j = 0; j < this.params.size.y; j++) {
+                this.cells[i][j].energy = ((i>=minZoneX && i<=maxZoneX) || (j>=minZoneY && j<=maxZoneY)) ? 0 : this.getSunEnergyByRow(i)
+            }
+        }
+
+    }
+
+
 
 
     getFilterTitles(): string[] {
