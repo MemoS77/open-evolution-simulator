@@ -13,11 +13,11 @@ export const newBotEnergy = 300
 // Энергия от солнца не более на одну свободную клетку
 export const maxPhotoEnergy = 15
 
-export const maxCellOrganic = 500
+export const maxCellOrganic = 700
 
-export const maxBotEnergy = 1000 // При переполнении энергии организм погибает
+export const maxBotEnergy = 800 // При переполнении энергии организм погибает
 
-export const criticalBotEnergy = 900 // Энергия после этого начинает расти не более чем на moveEnergy+1
+export const criticalBotEnergy = 700 // Энергия после этого начинает расти не более чем на moveEnergy+1
 
 export const idleEnergy = 1
 
@@ -33,3 +33,5 @@ export const minBotEnergy = Math.max(idleEnergy, moveEnergy, turnEnergy, mainAct
 export const maxHostCalc = 3
 
 export const maxNotGrowSteps = 200
+
+export const maxOrganicForPoison = 600
