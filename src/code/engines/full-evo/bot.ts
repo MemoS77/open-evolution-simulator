@@ -7,7 +7,7 @@ import stem from "./cell-draw/stem"
 import leaf from "./cell-draw/leaf"
 import armor from "./cell-draw/armor"
 import {CellAction} from "./types"
-import {criticalBotEnergy, maxBotEnergy, minBotEnergy} from "./const"
+import {criticalBotEnergy, maxBotEnergy, maxHostCalc, minBotEnergy} from "./const"
 
 // Общий класс для всех возможных ботов
 export default abstract class Bot {
@@ -65,7 +65,7 @@ export default abstract class Bot {
         const parent = this.getHost()
         if (parent) {
             cnt++
-            if (cnt>50) return cnt // защита от зацикливания
+            if (cnt>maxHostCalc) return cnt // защита от зацикливания
             return parent.getParentsCount(cnt)
         }
         return cnt
@@ -73,7 +73,7 @@ export default abstract class Bot {
 
     isParent(bot: Bot, cnt = 0): boolean {
         cnt++
-        if (cnt>50) return true
+        if (cnt>maxHostCalc) return true
         const host = this.getHost()
         if (host === bot) return true
         if (host) return host.isParent(bot, cnt)
@@ -85,7 +85,7 @@ export default abstract class Bot {
     // Избыток энергии отправляется боту в противоположном направлении
     sendEnergy(): void {
         const host = this.getHost()
-        if (host && (host.energy+1<this.energy)) {
+        if (host && (host.energy+minBotEnergy<this.energy)) {
             const energy = Math.floor((this.energy - host.energy)/2)
             this.delEnergy(energy)
             host.addEnergy(energy)
@@ -149,6 +149,9 @@ export default abstract class Bot {
     // Например, получить информацию о другой для полового размножения
     abstract mergeStem(bot: Bot): void
     abstract getAction(): CellAction
+
+    // Уникальный идентификатор бота на основе генома
+    abstract getID(): string
 
 }
 

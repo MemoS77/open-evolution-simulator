@@ -19,4 +19,8 @@ export default class FixedBot extends Bot {
         // Nothing
     }
 
+    getID(): string {
+        return "1"
+    }
+
 }

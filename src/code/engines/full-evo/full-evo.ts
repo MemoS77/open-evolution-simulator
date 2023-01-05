@@ -6,20 +6,35 @@ import Point from "../../types/point"
 import {
     idleEnergy,
     mainActionEnergy,
-    maxCellOrganic,
+    maxCellOrganic, maxNotGrowSteps,
     maxPhotoEnergy,
     minBotEnergy,
     moveEnergy,
     newBotEnergy,
     turnEnergy
 } from "./const"
-import {globalVars} from "../../inc/const"
+import {globalVars, infoFont} from "../../inc/const"
 import Bot from "./bot"
 import {randomInt} from "../../funcs/buttons"
 import {randomColor, turn4Left, turn4Right} from "../../funcs/utils"
 import {BotKind, CellActionKind} from "./enums"
 import {FourDirection} from "../../enums/four-direction"
 import MainBot from "./main-bot"
+
+type BInf = {
+    energy: number,
+    gen: string,
+    color: string,
+    borderColor: string,
+    cnt: number,
+}
+
+type BotInfo = Map<string, BInf>
+
+let uBotsCount = 0
+let lastStems = 0
+let stemsNotGrowSteps = 0
+
 
 
 export default class FullEvo extends CellEngine {
@@ -49,19 +64,84 @@ export default class FullEvo extends CellEngine {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
         this.drawCells()
         this.drawBots()
-        this.drawBotsGenome()
+        this.drawBotsStat()
     }
 
-    drawBotsGenome(): void {
-        // Вывести геном самых популярных ботов
+    drawBotsStat(): void {
+        // Вывести ID 5 самых массовых ботов
+
+        this.ctx.fillStyle = "Gray"
+        this.ctx.font      = infoFont
+        const tBotsCount = this.bots.size
+        const stems = Array.from(this.bots.values()).reduce((acc, b) => acc + (b.kind === BotKind.Stem ? 1 : 0), 0)
+
+
+        this.ctx.fillText("Unique bots: " + uBotsCount, 10, 136)
+        this.ctx.fillText("Total bots: " + tBotsCount, 10, 116)
+        this.ctx.fillText("Stems: " + stems, 10, 156)
+
+        // Защита от окончания размножения
+        if (stems<=lastStems) stemsNotGrowSteps++; else {
+            stemsNotGrowSteps = 0
+        }
+
+        lastStems = stems
+
+        this.ctx.fillText("Stems not grow steps: " + stemsNotGrowSteps, 10, 176)
+        if (stemsNotGrowSteps>maxNotGrowSteps) {
+            stemsNotGrowSteps = 0
+            this.reset()
+        }
+
+
+
+
         if (this.cycle % 1000 === 0) {
+            //const bots = Array.from(this.bots.values())
+
+            const all: BotInfo = new Map()
+            this.bots.forEach(bot  => {
+                const b =  bot as MainBot
+                const id = b.getID()
+                const v = all.get(id)
+                if (v) {
+                    v.energy += b.energy
+                    v.cnt++
+                    all.set(id, v)
+                } else {
+                    const v: BInf = {
+                        gen: JSON.stringify(b.gens),
+                        color: b.color,
+                        borderColor: b.borderColor,
+                        energy: b.energy,
+                        cnt: 1
+                    }
+                    all.set(id, v)
+                }
+            })
+
+            uBotsCount = all.size
+
+            const bots = Array.from(all.values())
+
+            bots.sort((a, b) => b.cnt - a.cnt)
+
+            for (let i = 0; i < Math.min(3, bots.length-1); i++) {
+                const b = bots[i]
+                console.log(b.cnt + " " + b.energy + " %c" + b.gen, "background-color: " + b.color + "; color: " + b.borderColor + ";font-size:10pt;")
+            }
+
+
+
+
+            /*
             const bots = Array.from(this.bots.values())
             bots.sort((a, b) => b.energy - a.energy)
             bots.forEach((bot, i) => {
                 if (i < 5) {
                     console.log("%c"+JSON.stringify((bot as MainBot).gens), "background-color: " + bot.color + "; color: " + bot.borderColor + ";font-size:10pt;")
                 }
-            })
+            })*/
         }
     }
 
@@ -204,6 +284,7 @@ export default class FullEvo extends CellEngine {
     }
 
     override nextStep(): void {
+
         this.indexBots()
 
         // Сначала сделаем все действия ботов, так они действуют одновременно
@@ -250,7 +331,7 @@ export default class FullEvo extends CellEngine {
         this.indexBots()
         this.workCollisions()
         //this.clearDeadBots()
-        this.draw()
+        //this.draw()
     }
 
 

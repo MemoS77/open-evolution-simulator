@@ -22,11 +22,16 @@ export default class MainBot extends Bot {
     nextCommand(inc = 1): number {
         this.cursor += inc
         const g = this.getGen()
-        while (this.cursor >= g.length) {
-            this.cursor -= g.length
-        }
-        while (this.cursor < 0) {
-            this.cursor += g.length
+
+        // Были зацикливания. Очень сильно возрастает счетчик.
+        if (Math.abs(this.cursor)>maxCommand*3) this.cursor = 0
+        else {
+            while (this.cursor >= g.length) {
+                this.cursor -= g.length
+            }
+            while (this.cursor < 0) {
+                this.cursor += g.length
+            }
         }
         return g[this.cursor]
     }
@@ -169,12 +174,14 @@ export default class MainBot extends Bot {
                 break
             }
             step++
-            if (step>maxGenSteps) return {
-                kind: CellActionKind.Idle,
-                param: 0
-            }
             this.nextCommand()
-
+            if (step>maxGenSteps) {
+                //console.log("Max steps reached")
+                return {
+                    kind: CellActionKind.Idle,
+                    param: 0
+                }
+            }
         } while (kind === null)
 
         return {kind, param: this.rX}
@@ -199,10 +206,13 @@ export default class MainBot extends Bot {
             }
             this.mutate()
         } else {
-            if (randomInt(0, 100) < 50) {
+            if (randomInt(0, 100) < 10) {
                 const mx = GoodGens.length-1
                 const idx = randomInt(0, mx)
-                this.gens = GoodGens[idx]
+                this.gens = []
+                for (let j=0; j<3; j++) {
+                    this.gens[j] =  [...GoodGens[idx][j]]
+                }
             } else {
                 for (let i = 0; i < 3; i++) {
                     this.gens.push(this.generateGen())
@@ -213,7 +223,7 @@ export default class MainBot extends Bot {
 
     mutate(): void {
         const idx = randomInt(0, 2)
-        const mode = randomInt(0, 200)
+        const mode = randomInt(0, 50)
         if (mode<3) {
             //console.log("Mutate gen", idx)
             //console.log("Old Gen", this.gens[idx])
@@ -235,10 +245,10 @@ export default class MainBot extends Bot {
             }
 
             const changeColor = randomInt(0, 100)
-            if (changeColor < 10) {
+            if (changeColor < 5) {
                 //console.log("New Color!")
                 this.color = randomColor()
-            } else if (changeColor > 90) {
+            } else if (changeColor > 95) {
                 //console.log("New Border Color!")
                 this.borderColor = randomColor()
             }
@@ -250,7 +260,25 @@ export default class MainBot extends Bot {
         //console.log("Merge Stem")
         const idx = randomInt(0, 2)
         this.gens[idx] = bot.gens[idx]
+        const idx2 = randomInt(0, 1)
+        if (idx2 === 0) {
+            this.color = bot.color
+        } else {
+            this.borderColor = bot.borderColor
+        }
 
+    }
+
+    private genSum(): number {
+        let sum = 0
+        for (let i = 0; i < 3; i++) {
+            sum += this.gens[i].length
+        }
+        return sum
+    }
+
+    getID(): string {
+        return this.color+this.borderColor
     }
 
 }
