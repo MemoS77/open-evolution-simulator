@@ -8,6 +8,7 @@ export function initCellDraw(ctx: CanvasRenderingContext2D, position: Point, com
     ctx.fillStyle = commonColor
     ctx.strokeStyle = color
     ctx.setLineDash([])
+    ctx.lineWidth = 1
     return {x: cx, y: cy}
 }
 
