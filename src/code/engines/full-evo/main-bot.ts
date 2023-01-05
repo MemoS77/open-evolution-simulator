@@ -237,9 +237,9 @@ export default class MainBot extends Bot {
             for (let i = 0; i < genCount; i++) {
                 this.gens.push([...p.gens[i]])
             }
-            this.mutate()
+            if (this.kind === BotKind.Stem) this.mutate()
         } else {
-            if (randomInt(0, 100) < 0) {
+            if (randomInt(0, 100) < 10) {
                 const mx = GoodGens.length-1
                 const idx = randomInt(0, mx)
                 this.gens = []
@@ -256,7 +256,7 @@ export default class MainBot extends Bot {
 
     mutate(): void {
         const idx = randomInt(0, genCount-1)
-        const mode = randomInt(0, 30)
+        const mode = randomInt(0, 50)
         if (mode<3) {
             switch (mode) {
             // Добавить случайную команду
@@ -276,10 +276,10 @@ export default class MainBot extends Bot {
             }
 
             const changeColor = randomInt(0, 100)
-            if (changeColor < 5) {
+            if (changeColor < 2) {
                 //console.log("New Color!")
                 this.color = randomColor()
-            } else if (changeColor > 95) {
+            } else if (changeColor > 98) {
                 //console.log("New Border Color!")
                 this.borderColor = randomColor()
             }

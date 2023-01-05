@@ -354,11 +354,20 @@ export default class FullEvo extends CellEngine {
         })
 
 
+        this.bots.forEach(bot => {
+            // Умирают все боты кроме шипов на отравленных клетках
+            if (bot.kind !== BotKind.Armor) {
+                if (this.isPoisoned(bot.position)) {
+                    //console.log("Die Poison", bot.kind, bot.energy)
+                    bot.die()
+                }
+            }
+        })
+
         this.indexBots()
         this.workCollisions()
 
-
-        // Клетки без хоста, умираю
+        // Клетки без хоста, умирают
         this.bots.forEach(bot => {
             if (bot.kind !== BotKind.Stem) {
                 const owner = bot.getHost()

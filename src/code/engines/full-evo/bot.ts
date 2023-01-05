@@ -104,7 +104,7 @@ export default abstract class Bot {
             const cell = this.engine.getFieldCell(p)
             if (cell && cell.bots.length > 0) {
                 const bot = this.engine.getBot(cell.bots[0])
-                if (bot && bot.kind === BotKind.Stem) return bot
+                if (bot && bot.kind === BotKind.Stem && this.isSimilar(bot)) return bot
             }
         }
         return null
