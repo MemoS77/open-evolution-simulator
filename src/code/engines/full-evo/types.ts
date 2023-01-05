@@ -2,6 +2,7 @@ import {CellActionKind} from "./enums"
 
 export type WorldParams = {
     // Extra params
+    centerNotEnergy?: boolean
 }
 
 export type Cell = {
