@@ -52,7 +52,7 @@ export default class FullEvo extends CellEngine {
 
     removeBot(bot: Bot): void {
         if (bot.engineIndex >= 0)  {
-            const e = Math.max(Math.floor(bot.energy/4), minBotEnergy)
+            const e = Math.max(Math.floor(bot.energy/5), minBotEnergy)
             bot.energy = 0
             // В почве остается немного органики
             this.addOrganic(bot.position, e)
@@ -362,7 +362,7 @@ export default class FullEvo extends CellEngine {
 
 
     private maxEat(bot: Bot) {
-        return Math.max(bot.energy, minBotEnergy)
+        return Math.max(bot.energy*3, minBotEnergy*3)
     }
 
 
