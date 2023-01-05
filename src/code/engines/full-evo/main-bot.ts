@@ -187,7 +187,9 @@ export default class MainBot extends Bot {
             }
         } while (kind === null)
 
-        return {kind, param: this.rX}
+        const res = {kind, param: this.rX}
+        if (res.kind === CellActionKind.Move)  res.param = this.direction
+        return res
     }
 
     generateGen(): Gen {
@@ -209,7 +211,7 @@ export default class MainBot extends Bot {
             }
             this.mutate()
         } else {
-            if (randomInt(0, 100) < 10) {
+            if (randomInt(0, 100) < 0) {
                 const mx = GoodGens.length-1
                 const idx = randomInt(0, mx)
                 this.gens = []

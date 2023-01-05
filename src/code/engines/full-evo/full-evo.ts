@@ -295,8 +295,29 @@ export default class FullEvo extends CellEngine {
 
         // Сначала сделаем все действия ботов, так они действуют одновременно
         this.bots.forEach(bot => {
-            bot.lastAction = bot.getAction()
+            if (bot.kind === BotKind.Stem) bot.lastAction = bot.getAction()
+            else bot.lastAction = {
+                kind: CellActionKind.MainAction,
+                param: 0
+            }
         })
+
+        // Если хозяин движется или выращивает клетку в направлении листа или брони,
+        // то они тоже сдвигаются
+        this.bots.forEach(bot => {
+            if (bot.kind !== BotKind.Stem) {
+                const owner = bot.getHost()
+                if (owner) {
+                    const k = owner.lastAction!.kind
+                    if ((k === CellActionKind.Move) || ((k === CellActionKind.MainAction) && (owner.direction === bot.direction))) {
+                        if (k === CellActionKind.MainAction) console.log("MainAction", bot.position, bot.direction, bot.energy)
+                        bot.lastAction!.kind = CellActionKind.Move
+                        bot.lastAction!.param = owner.direction
+                    }
+                }
+            }
+        })
+
 
         // Теперь обработаем все действия ботов
         this.bots.forEach(bot => {
@@ -304,11 +325,10 @@ export default class FullEvo extends CellEngine {
                 switch (bot.lastAction.kind) {
                 case CellActionKind.Idle:
                     bot.delEnergy(idleEnergy)
-
                     break
                 case CellActionKind.Move:
                     bot.delEnergy(moveEnergy)
-                    const d = this.pointByDirection(bot.position, bot.direction)
+                    const d = this.pointByDirection(bot.position, bot.lastAction.param)
                     if (d !== null) bot.position = d
                     break
                 case CellActionKind.TurnLeft:
@@ -334,8 +354,19 @@ export default class FullEvo extends CellEngine {
             bot.lastAction = null
         })
 
+
         this.indexBots()
         this.workCollisions()
+
+
+        // Клетки без хоста, умираю
+        this.bots.forEach(bot => {
+            if (bot.kind !== BotKind.Stem) {
+                const owner = bot.getHost()
+                if (!owner) bot.die()
+            }
+        })
+
         //this.clearDeadBots()
         //this.draw()
     }
