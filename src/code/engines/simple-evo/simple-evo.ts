@@ -1,4 +1,3 @@
-import Engine2d from "../engine2d"
 import EngineInfo from "../../types/engine-info"
 import EngineParams from "../../types/engine-params"
 import paramsList, {EvoEngineParams} from "./params-list"
@@ -8,29 +7,13 @@ import Point from "../../types/point"
 import {BotAction, Cell, CellBots} from "./types"
 import FirstBot from "./first-bot"
 import {globalVars, infoFont} from "../../inc/const"
+import CellEngine, {cellPadding, drawCellSize, innerCellSize} from "../cell-engine"
 
 
-
-const drawCellSize = 16
-const padding = 1
-const innerCellSize = drawCellSize - padding * 2
-
-export default class SimpleEvo extends Engine2d {
+export default class SimpleEvo extends CellEngine {
     bots: Bot[] = []
     cells: Cell[][] = []
-    params: EvoEngineParams
-
-
-    override centerCamera() {
-        const x =  this.params.size.x * drawCellSize
-        const y =  this.params.size.y * drawCellSize
-
-        this.camera = {
-            x: Math.round((this.canvas.width-x)/2),
-            y: Math.round((this.canvas.height-y)/2),
-            zoom: 1
-        }
-    }
+    override params: EvoEngineParams
 
 
     getViewTitles(): string[] {
@@ -60,8 +43,8 @@ export default class SimpleEvo extends Engine2d {
                         this.ctx.fillStyle = "rgb(0,0,0)"
                     }
                 }
-                const cx = i * drawCellSize + this.camera.x + padding
-                const cy = j * drawCellSize+this.camera.y + padding
+                const cx = i * drawCellSize + globalVars.camera.x + cellPadding
+                const cy = j * drawCellSize+globalVars.camera.y + cellPadding
                 this.ctx.fillRect(cx, cy, innerCellSize, innerCellSize)
                 const bot = this.findBot(i, j)
                 if (bot) {
@@ -269,7 +252,7 @@ export default class SimpleEvo extends Engine2d {
         this.bots.push(bot)
     }
 
-    private initBots() {
+    initBots() {
         this.bots = []
         for (let i=0; i<this.params!.count!; i++) {
             let p: Point
@@ -331,7 +314,7 @@ export default class SimpleEvo extends Engine2d {
         }
     }
 
-    private initCells() {
+    initCells() {
         this.cells = []
         const conf = this.params!.conf
         const halfY = Math.floor(this.params!.size.y/2)

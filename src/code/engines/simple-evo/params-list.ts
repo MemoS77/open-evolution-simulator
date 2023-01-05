@@ -9,7 +9,7 @@ export interface EvoEngineParams extends EngineParams {
 const paramsList: EvoEngineParams[] = [{
     name: "Big map with border, average params",
     size: {x: 80, y: 50},
-    count: 500,
+    count: 1000,
     conf: {
         defaultEnergy: 200,
         energyForReproduction: 60,
@@ -26,7 +26,7 @@ const paramsList: EvoEngineParams[] = [{
 {
     name: "Average params",
     size: {x: 60, y: 40},
-    count: 200,
+    count: 500,
     conf: {
         defaultEnergy: 200,
         energyForReproduction: 60,
@@ -41,9 +41,26 @@ const paramsList: EvoEngineParams[] = [{
     }
 },
 {
+    name: "Smaller map and fewer greens",
+    size: {x: 40, y: 40},
+    count: 400,
+    conf: {
+        defaultEnergy: 200,
+        energyForReproduction: 60,
+        maxBotEnergy: 400,
+        deathBotEnergy: 40,
+        maxCellEnergy: 5,
+        maxCellOrganic: 200,
+        maxLifeTime: 700,
+        centerBorder: false,
+        greensProp: 0.2,
+        organicProp: 0.1
+    }
+},
+{
     name: "Few greens. No organic",
     size: {x: 60, y: 40},
-    count: 300,
+    count: 400,
     conf: {
         defaultEnergy: 200,
         energyForReproduction: 60,

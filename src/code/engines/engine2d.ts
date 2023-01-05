@@ -1,11 +1,9 @@
 import Engine from "./engine"
 import EngineParams from "../types/engine-params"
-import Camera from "../types/camera"
+import {globalVars} from "../inc/const"
 
 export default abstract class Engine2d extends Engine {
     protected ctx: CanvasRenderingContext2D
-
-    camera: Camera = { x: 0, y: 0, zoom: 1 }
 
 
     override init(canvas: HTMLCanvasElement, params: EngineParams) {
@@ -18,7 +16,7 @@ export default abstract class Engine2d extends Engine {
         const x =  this.params ? this.params.size!.x : 0
         const y =  this.params ? this.params.size!.y : 0
 
-        this.camera = {
+        globalVars.camera = {
             x: Math.round((this.canvas.width-x)/2),
             y: Math.round((this.canvas.height-y)/2),
             zoom: 1
@@ -31,8 +29,8 @@ export default abstract class Engine2d extends Engine {
     }
 
     onDrag(dx: number, dy: number) {
-        this.camera.x += dx
-        this.camera.y += dy
+        globalVars.camera.x += dx
+        globalVars.camera.y += dy
     }
 
     clear() {
