@@ -16,7 +16,7 @@ import {
 import {globalVars, infoFont} from "../../inc/const"
 import Bot from "./bot"
 import {randomInt} from "../../funcs/buttons"
-import {randomColor, turn4Left, turn4Right} from "../../funcs/utils"
+import {turn4Left, turn4Right} from "../../funcs/utils"
 import {BotKind, CellActionKind} from "./enums"
 import {FourDirection} from "../../enums/four-direction"
 import MainBot from "./main-bot"
@@ -109,10 +109,11 @@ export default class FullEvo extends CellEngine {
                     v.cnt++
                     all.set(id, v)
                 } else {
+                    const colors = b.getColors()
                     const v: BInf = {
                         gen: JSON.stringify(b.gens),
-                        color: b.color,
-                        borderColor: b.borderColor,
+                        color: colors.color,
+                        borderColor: colors.borderColor,
                         energy: b.energy,
                         cnt: 1
                     }
@@ -128,20 +129,8 @@ export default class FullEvo extends CellEngine {
 
             for (let i = 0; i < Math.min(3, bots.length-1); i++) {
                 const b = bots[i]
-                console.log(b.cnt + " " + b.energy + " %c" + b.gen, "background-color: " + b.color + "; color: " + b.borderColor + ";font-size:10pt;")
+                console.log("%c" + b.gen, "background-color: " + b.color + "; color: " + b.borderColor + ";font-size:10pt;")
             }
-
-
-
-
-            /*
-            const bots = Array.from(this.bots.values())
-            bots.sort((a, b) => b.energy - a.energy)
-            bots.forEach((bot, i) => {
-                if (i < 5) {
-                    console.log("%c"+JSON.stringify((bot as MainBot).gens), "background-color: " + bot.color + "; color: " + bot.borderColor + ";font-size:10pt;")
-                }
-            })*/
         }
     }
 
@@ -226,14 +215,10 @@ export default class FullEvo extends CellEngine {
     }
 
 
-    /*
-    clearDeadBots(): void {
-        this.bots.forEach(bot => {
-            if (bot.energy<minBotEnergy) bot.die()
-        })
-    }
 
- */
+
+
+
 
     workCollision(cell: Cell): void {
         // Боты на одной ячейке
@@ -367,13 +352,19 @@ export default class FullEvo extends CellEngine {
         this.indexBots()
         this.workCollisions()
 
+        this.indexBots()
+
         // Клетки без хоста, умирают
         this.bots.forEach(bot => {
             if (bot.kind !== BotKind.Stem) {
                 const owner = bot.getHost()
-                if (!owner) bot.die()
+                if (!owner) {
+                    bot.die()
+                }
             }
         })
+
+
 
         //this.clearDeadBots()
         //this.draw()
@@ -435,8 +426,8 @@ export default class FullEvo extends CellEngine {
                 if (cell && bot.energy>minBotEnergy*2) {
                     const e = Math.floor(bot.energy / 2)
                     const newBot = new MainBot(this, this.nextBotId, param%3, d!, e, bot)
-                    bot.delEnergy(e)
                     this.addBot(newBot)
+                    bot.delEnergy(e)
                 }
             }
             break
@@ -486,7 +477,7 @@ export default class FullEvo extends CellEngine {
         let minZoneY = -1
         let maxZoneY = -1
 
-        const cf = 0.53
+        const cf = 0.52
         const cf2 = 1-cf
         if (this.params.conf.centerNotEnergy) {
             minZoneX = this.params.size.x*cf2
@@ -520,8 +511,6 @@ export default class FullEvo extends CellEngine {
             newBotEnergy,
             null,
             randomInt(0, 3),
-            randomColor(),
-            randomColor()
         )
         this.addBot(bot)
     }

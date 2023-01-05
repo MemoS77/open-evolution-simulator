@@ -1,6 +1,6 @@
 import Bot from "./bot"
 import {BotKind, CellActionKind} from "./enums"
-import {CellAction, Gen} from "./types"
+import {CellAction, drawColors, Gen} from "./types"
 import {randomInt} from "../../funcs/buttons"
 import {maxGenLength, maxGenSteps, minGenLength} from "./const"
 import {FourDirection} from "../../enums/four-direction"
@@ -9,12 +9,13 @@ import {randomColor} from "../../funcs/utils"
 
 const maxCommand = 42
 const genCount = 2
+const maxMutations = 10
 
 export default class MainBot extends Bot {
     private currentGenIndex = 0
 
     isSimilar(bot: Bot): boolean {
-        return bot.color === this.color && bot.borderColor === this.borderColor
+        return bot.getID() === this.getID()
     }
 
     gens: Gen[]
@@ -34,14 +35,14 @@ export default class MainBot extends Bot {
         // Были зацикливания. Очень сильно возрастает счетчик.
         if (Math.abs(this.cursor)>maxCommand*3) this.cursor = 0
         else {
-            while (this.cursor >= g.length) {
-                this.cursor -= g.length
+            while (this.cursor >= g.code.length) {
+                this.cursor -= g.code.length
             }
             while (this.cursor < 0) {
-                this.cursor += g.length
+                this.cursor += g.code.length
             }
         }
-        return g[this.cursor]
+        return g.code[this.cursor]
     }
 
     override getAction(): CellAction {
@@ -78,7 +79,7 @@ export default class MainBot extends Bot {
 
 
         do {
-            const c = g[this.cursor]
+            const c = g.code[this.cursor]
             switch (c) {
             case 0:
             case 1:
@@ -219,12 +220,24 @@ export default class MainBot extends Bot {
     }
 
     generateGen(): Gen {
-        const g: Gen = []
+        const g: Gen = {
+            code: [],
+            color: randomColor(),
+            mutations: 0
+        }
         const cnt = randomInt(minGenLength, maxGenLength)
         for (let i = 0; i < cnt; i++) {
-            g.push(randomInt(0, maxCommand))
+            g.code.push(randomInt(0, maxCommand))
         }
         return g
+    }
+
+    copyGen(g: Gen): Gen {
+        return {
+            code: [...g.code],
+            color: g.color,
+            mutations: g.mutations
+        }
     }
 
     override init(parentBot: Bot | null ): void {
@@ -235,18 +248,19 @@ export default class MainBot extends Bot {
         if (parentBot) {
             const p = parentBot as MainBot
             for (let i = 0; i < genCount; i++) {
-                this.gens.push([...p.gens[i]])
+                this.gens.push(this.copyGen(p.gens[i]))
             }
             if (this.kind === BotKind.Stem) this.mutate()
         } else {
-            if (randomInt(0, 100) < 10) {
+            if (randomInt(0, 100) < 0) {
                 const mx = GoodGens.length-1
                 const idx = randomInt(0, mx)
-                this.gens = []
                 for (let j=0; j<genCount; j++) {
-                    this.gens[j] =  [...GoodGens[idx][j]]
+                    this.gens[j] =  JSON.parse(GoodGens[idx])
                 }
-            } else {
+            }
+            else
+            {
                 for (let i = 0; i < genCount; i++) {
                     this.gens.push(this.generateGen())
                 }
@@ -261,27 +275,26 @@ export default class MainBot extends Bot {
             switch (mode) {
             // Добавить случайную команду
             case 0:
-                this.gens[idx].splice(randomInt(0, this.gens[idx].length), 0, randomInt(0, maxCommand))
+                this.gens[idx].code.splice(randomInt(0, this.gens[idx].code.length), 0, randomInt(0, maxCommand))
                 break
                 // Удалить случайную команду
             case 1:
-                if (this.gens[idx].length > minGenLength) {
-                    this.gens[idx].splice(randomInt(0, this.gens[idx].length - 1), 1)
+                if (this.gens[idx].code.length > minGenLength) {
+                    this.gens[idx].code.splice(randomInt(0, this.gens[idx].code.length - 1), 1)
                 }
                 break
                 // Заменить случайную команду
             case 2:
-                this.gens[idx][randomInt(0, this.gens[idx].length - 1)] = randomInt(0, maxCommand)
+                this.gens[idx].code[randomInt(0, this.gens[idx].code.length - 1)] = randomInt(0, maxCommand)
                 break
             }
 
-            const changeColor = randomInt(0, 100)
-            if (changeColor < 2) {
-                //console.log("New Color!")
-                this.color = randomColor()
-            } else if (changeColor > 98) {
-                //console.log("New Border Color!")
-                this.borderColor = randomColor()
+            this.gens[idx].mutations++
+
+            if (this.gens[idx].mutations > maxMutations) {
+                this.gens[idx].color = randomColor()
+                this.gens[idx].mutations = 0
+                console.log("New Color! ", idx, this.gens[idx].color)
             }
         }
     }
@@ -290,18 +303,20 @@ export default class MainBot extends Bot {
     override mergeStem(bot: MainBot): void {
         const idx = randomInt(0, genCount-1)
         //console.log("Merge Stem",idx)
-        this.gens[idx] = [...bot.gens[idx]]
-        if (idx === 0) {
-            this.color = bot.color
-        } else {
-            this.borderColor = bot.borderColor
-        }
+        this.gens[idx] = this.copyGen(bot.gens[idx])
     }
 
 
 
     getID(): string {
-        return this.color+this.borderColor
+        return this.gens.map(g => g.color).join("")
+    }
+
+    getColors(): drawColors {
+        return {
+            color: this.gens[0].color,
+            borderColor: this.gens[1].color,
+        }
     }
 
 }

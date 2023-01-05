@@ -6,15 +6,13 @@ import {BotKind} from "./enums"
 import stem from "./cell-draw/stem"
 import leaf from "./cell-draw/leaf"
 import armor from "./cell-draw/armor"
-import {CellAction} from "./types"
+import {CellAction, drawColors} from "./types"
 import {maxBotEnergy, minBotEnergy} from "./const"
 
 // Общий класс для всех возможных ботов
 export default abstract class Bot {
     energy: number
-    color: string
     position: Point
-    borderColor: string
     direction: FourDirection
     rX = 0
     rY = 0
@@ -33,16 +31,12 @@ export default abstract class Bot {
         energy: number,
         parentBot: Bot | null,
         direction?: FourDirection,
-        color?: string,
-        borderColor?: string,
     ) {
         this.kind = kind
         this.energy = energy
         this.engine = engine
         this.position = position
-        this.color = color ? color : parentBot!.color
-        this.borderColor = borderColor ? borderColor : parentBot!.borderColor
-        this.direction = (direction!==undefined) ? direction : parentBot!.direction
+        this.direction = (direction!==undefined) ? direction : (parentBot ? parentBot.direction : FourDirection.Up)
         this.rX = 0
         this.rY = 0
         this.rZ = 0
@@ -93,8 +87,15 @@ export default abstract class Bot {
         // У стволовых также учитываем боковые
         if (r ===null && this.kind === BotKind.Stem) {
             r = this.hostByPoint(this.engine.pointByDirection(this.position, FourDirection.Left))
-            if (r ===null) r = this.hostByPoint(this.engine.pointByDirection(this.position, FourDirection.Right))
+            if (r ===null) {
+                r = this.hostByPoint(this.engine.pointByDirection(this.position, FourDirection.Right))
+
+            }
         }
+
+
+
+
         return r
     }
 
@@ -120,18 +121,19 @@ export default abstract class Bot {
     }
 
 
+    abstract getColors(): drawColors
+
     draw(ctx: CanvasRenderingContext2D): void {
-        const commonColor = this.borderColor
-        const color = this.color
+        const colors = this.getColors()
         switch (this.kind) {
         case BotKind.Stem:
-            stem(ctx, this.direction, this.position, commonColor, color)
+            stem(ctx, this.direction, this.position, colors.borderColor, colors.color)
             break
         case BotKind.Leaf:
-            leaf(ctx, this.direction, this.position, commonColor, color)
+            leaf(ctx, this.direction, this.position, colors.borderColor, colors.color)
             break
         case BotKind.Armor:
-            armor(ctx, this.direction, this.position, commonColor, color)
+            armor(ctx, this.direction, this.position, colors.borderColor, colors.color)
             break
         }
     }

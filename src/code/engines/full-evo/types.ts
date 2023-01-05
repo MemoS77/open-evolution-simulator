@@ -11,7 +11,16 @@ export type Cell = {
     bots: number[]
 }
 
-export type Gen = number[]
+export type drawColors = {
+    color: string,
+    borderColor: string
+}
+
+export type Gen = {
+    code: number[],
+    color: string,
+    mutations: number
+}
 
 export type Genome = Gen[]
 
