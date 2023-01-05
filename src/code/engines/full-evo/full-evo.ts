@@ -8,7 +8,7 @@ import {
     mainActionEnergy,
     maxCellOrganic, maxNotGrowSteps, maxOrganicForPoison,
     maxPhotoEnergy,
-    minBotEnergy,
+    minBotEnergy, minPhotoEnergy,
     moveEnergy,
     newBotEnergy,
     turnEnergy
@@ -266,7 +266,7 @@ export default class FullEvo extends CellEngine {
                             if (stem===null)  stem = bot
                             else {
                                 stem.mergeStem(bot)
-                                stem.addEnergy(Math.floor(bot.energy/2))
+                                stem.addEnergy(Math.floor(bot.energy))
                                 bot.die()
                             }
 
@@ -290,13 +290,34 @@ export default class FullEvo extends CellEngine {
     }
 
     override nextStep(): void {
-
+        this.setCurrentCellEnergy()
         this.indexBots()
 
         // Сначала сделаем все действия ботов, так они действуют одновременно
         this.bots.forEach(bot => {
-            bot.lastAction = bot.getAction()
+            if (bot.kind === BotKind.Stem) bot.lastAction = bot.getAction()
+            else bot.lastAction = {
+                kind: CellActionKind.MainAction,
+                param: 0
+            }
         })
+
+        // Если хозяин движется или выращивает клетку в направлении листа или брони,
+        // то они тоже сдвигаются
+        this.bots.forEach(bot => {
+            if (bot.kind !== BotKind.Stem) {
+                const owner = bot.getHost()
+                if (owner) {
+                    const k = owner.lastAction!.kind
+                    if ((k === CellActionKind.Move) || ((k === CellActionKind.MainAction) && (owner.direction === bot.direction))) {
+                        //if (k === CellActionKind.MainAction) console.log("MainAction", bot.position, bot.direction, bot.energy)
+                        bot.lastAction!.kind = CellActionKind.Move
+                        bot.lastAction!.param = owner.direction
+                    }
+                }
+            }
+        })
+
 
         // Теперь обработаем все действия ботов
         this.bots.forEach(bot => {
@@ -304,22 +325,20 @@ export default class FullEvo extends CellEngine {
                 switch (bot.lastAction.kind) {
                 case CellActionKind.Idle:
                     bot.delEnergy(idleEnergy)
-
                     break
                 case CellActionKind.Move:
                     bot.delEnergy(moveEnergy)
-                    const d = this.pointByDirection(bot.position, bot.direction)
+                    const d = this.pointByDirection(bot.position, bot.lastAction.param)
                     if (d !== null) bot.position = d
                     break
                 case CellActionKind.TurnLeft:
-
-                    if (bot.kind === BotKind.Stem || bot.getHost()===null) {
+                    if (bot.kind === BotKind.Stem) {
                         bot.direction = turn4Left(bot.direction)
                         bot.delEnergy(turnEnergy)
                     }
                     break
                 case CellActionKind.TurnRight:
-                    if (bot.kind === BotKind.Stem || bot.getHost()===null) {
+                    if (bot.kind === BotKind.Stem) {
                         bot.direction = turn4Right(bot.direction)
                         bot.delEnergy(turnEnergy)
                     }
@@ -334,8 +353,28 @@ export default class FullEvo extends CellEngine {
             bot.lastAction = null
         })
 
+
+        this.bots.forEach(bot => {
+            // Умирают все боты кроме шипов на отравленных клетках
+            if (bot.kind !== BotKind.Armor) {
+                if (this.isPoisoned(bot.position)) {
+                    //console.log("Die Poison", bot.kind, bot.energy)
+                    bot.die()
+                }
+            }
+        })
+
         this.indexBots()
         this.workCollisions()
+
+        // Клетки без хоста, умирают
+        this.bots.forEach(bot => {
+            if (bot.kind !== BotKind.Stem) {
+                const owner = bot.getHost()
+                if (!owner) bot.die()
+            }
+        })
+
         //this.clearDeadBots()
         //this.draw()
     }
@@ -417,26 +456,56 @@ export default class FullEvo extends CellEngine {
 
     override initCells(): void {
         this.cells = []
-        let minZone = -1
-        let maxZone = -1
-        if (this.params.conf.centerNotEnergy) {
-            minZone = this.params.size.x*0.45
-            maxZone = this.params.size.x*0.55
-
-        }
-
         for (let i = 0; i < this.params.size.x; i++) {
             this.cells[i] = []
             for (let j = 0; j < this.params.size.y; j++) {
                 this.cells[i][j] = {
-                    energy: (i>=minZone && i<=maxZone) ? 0 : Math.round((this.params.size.y-j)/this.params.size.y*maxPhotoEnergy),
+                    energy: maxPhotoEnergy,
                     organic: randomInt(0, Math.round(maxCellOrganic/10)),
                     bots: []
                 }
 
             }
         }
+
+        this.setCurrentCellEnergy()
     }
+
+
+    getSunEnergyByRow(x: number): number {
+        // Освещение зависит от цикла солнца
+        return Math.round((maxPhotoEnergy-minPhotoEnergy)*(Math.sin(
+            (this.cycle/200 + x * 2 * Math.PI / this.params.size.x)
+        )+1))+minPhotoEnergy
+    }
+
+
+    setCurrentCellEnergy(): void {
+        let minZoneX = -1
+        let maxZoneX = -1
+        let minZoneY = -1
+        let maxZoneY = -1
+
+        const cf = 0.53
+        const cf2 = 1-cf
+        if (this.params.conf.centerNotEnergy) {
+            minZoneX = this.params.size.x*cf2
+            maxZoneX = this.params.size.x*cf
+            minZoneY = this.params.size.y*cf2
+            maxZoneY = this.params.size.y*cf
+        }
+
+
+
+        for (let i = 0; i < this.params.size.x; i++) {
+            for (let j = 0; j < this.params.size.y; j++) {
+                this.cells[i][j].energy = ((i>=minZoneX && i<=maxZoneX) || (j>=minZoneY && j<=maxZoneY)) ? 0 : this.getSunEnergyByRow(i)
+            }
+        }
+
+    }
+
+
 
 
     getFilterTitles(): string[] {

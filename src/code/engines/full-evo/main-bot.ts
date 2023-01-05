@@ -1,5 +1,5 @@
 import Bot from "./bot"
-import {CellActionKind} from "./enums"
+import {BotKind, CellActionKind} from "./enums"
 import {CellAction, Gen} from "./types"
 import {randomInt} from "../../funcs/buttons"
 import {maxGenLength, maxGenSteps, minGenLength} from "./const"
@@ -8,16 +8,24 @@ import {GoodGens} from "./good-gens"
 import {randomColor} from "../../funcs/utils"
 
 const maxCommand = 42
+const genCount = 2
 
 export default class MainBot extends Bot {
+    private currentGenIndex = 0
+
+    isSimilar(bot: Bot): boolean {
+        return bot.color === this.color && bot.borderColor === this.borderColor
+    }
 
     gens: Gen[]
     cursor: number
 
 
     private getGen(): Gen {
-        return this.gens[this.kind]
+        return this.gens[this.currentGenIndex]
     }
+
+
 
     nextCommand(inc = 1): number {
         this.cursor += inc
@@ -37,8 +45,25 @@ export default class MainBot extends Bot {
     }
 
     override getAction(): CellAction {
+
+        // Можно и не добавлять, это контролирует движок
+        if (this.kind!==BotKind.Stem) return   {
+            kind: CellActionKind.MainAction,
+            param: 0
+        }
+
+
         let kind = null
         const host = this.getHost()
+
+        if (host && this.currentGenIndex===0) {
+            this.currentGenIndex = 1
+            this.cursor = 0
+        } else if (host === null && this.currentGenIndex===1) {
+            this.currentGenIndex = 0
+            this.cursor = 0
+        }
+
         const g = this.getGen()
         let step = 0
 
@@ -49,6 +74,7 @@ export default class MainBot extends Bot {
         }
         const targetCell = p ? this.engine.getFieldCell(p) : null
         const targetBot = targetCell ? (targetCell.bots.length ? this.engine.getBot(targetCell.bots[0]) : null) : null
+        const isSimilar = targetBot && this.isSimilar(targetBot)
 
 
         do {
@@ -66,16 +92,16 @@ export default class MainBot extends Bot {
                 if (this.rX < 0) this.rX = 0
                 break
             case 6:
-                this.rX = this.rY
+                this.rX = this.rY ?? 0
                 break
             case 7:
-                this.rY = this.rX
+                this.rY = this.rX ?? 0
                 break
             case 8:
-                this.rY+=this.rX
+                this.rY+=this.rX ?? 0
                 break
             case 9:
-                this.rY-=this.rX
+                this.rY-=this.rX ?? 0
                 if (this.rY < 0) this.rY = 0
                 break
             case 10:
@@ -86,7 +112,7 @@ export default class MainBot extends Bot {
                 //console.log("Random X", this.rX)
                 break
             case 12:
-                this.rX = this.getParentsCount()
+                this.rX = 2
                 break
             case 13:
                 this.rX = this.nextCommand()
@@ -121,11 +147,11 @@ export default class MainBot extends Bot {
             case 23:
                 this.rY = targetCell ? (targetBot
                     ?
-                    (this.isParent(targetBot) || targetBot.isParent(this) ? 1 : 2)
+                    (isSimilar ? 1 : 2)
                     : 0) : 3
                 break
             case 24:
-                this.rY = targetBot ? targetBot.kind : 0
+                this.rY = targetBot ? (targetBot.kind+1) : 0
                 break
             case 25:
                 this.rY = targetCell ? targetCell.energy : 0
@@ -134,7 +160,7 @@ export default class MainBot extends Bot {
                 this.rY = targetCell ? targetCell.organic: 0
                 break
             case 27:
-                this.rY = targetBot ? targetBot.energy : 0
+                this.rY = targetBot ? targetBot.energy+1 : 0
                 break
             case 28:
                 if (this.rX>this.rY) this.nextCommand(2)
@@ -187,7 +213,9 @@ export default class MainBot extends Bot {
             }
         } while (kind === null)
 
-        return {kind, param: this.rX}
+        const res = {kind, param: this.rX}
+        if (res.kind === CellActionKind.Move)  res.param = this.direction
+        return res
     }
 
     generateGen(): Gen {
@@ -202,22 +230,24 @@ export default class MainBot extends Bot {
     override init(parentBot: Bot | null ): void {
         this.cursor = 0
         this.gens = []
+        this.currentGenIndex = 0
+
         if (parentBot) {
             const p = parentBot as MainBot
-            for (let i = 0; i < 3; i++) {
+            for (let i = 0; i < genCount; i++) {
                 this.gens.push([...p.gens[i]])
             }
-            this.mutate()
+            if (this.kind === BotKind.Stem) this.mutate()
         } else {
             if (randomInt(0, 100) < 10) {
                 const mx = GoodGens.length-1
                 const idx = randomInt(0, mx)
                 this.gens = []
-                for (let j=0; j<3; j++) {
+                for (let j=0; j<genCount; j++) {
                     this.gens[j] =  [...GoodGens[idx][j]]
                 }
             } else {
-                for (let i = 0; i < 3; i++) {
+                for (let i = 0; i < genCount; i++) {
                     this.gens.push(this.generateGen())
                 }
             }
@@ -225,11 +255,9 @@ export default class MainBot extends Bot {
     }
 
     mutate(): void {
-        const idx = randomInt(0, 2)
+        const idx = randomInt(0, genCount-1)
         const mode = randomInt(0, 50)
         if (mode<3) {
-            //console.log("Mutate gen", idx)
-            //console.log("Old Gen", this.gens[idx])
             switch (mode) {
             // Добавить случайную команду
             case 0:
@@ -248,10 +276,10 @@ export default class MainBot extends Bot {
             }
 
             const changeColor = randomInt(0, 100)
-            if (changeColor < 5) {
+            if (changeColor < 2) {
                 //console.log("New Color!")
                 this.color = randomColor()
-            } else if (changeColor > 95) {
+            } else if (changeColor > 98) {
                 //console.log("New Border Color!")
                 this.borderColor = randomColor()
             }
@@ -260,25 +288,17 @@ export default class MainBot extends Bot {
 
     // Половое размножение
     override mergeStem(bot: MainBot): void {
-        //console.log("Merge Stem")
-        const idx = randomInt(0, 2)
-        this.gens[idx] = bot.gens[idx]
-        const idx2 = randomInt(0, 1)
-        if (idx2 === 0) {
+        const idx = randomInt(0, genCount-1)
+        //console.log("Merge Stem",idx)
+        this.gens[idx] = [...bot.gens[idx]]
+        if (idx === 0) {
             this.color = bot.color
         } else {
             this.borderColor = bot.borderColor
         }
-
     }
 
-    private genSum(): number {
-        let sum = 0
-        for (let i = 0; i < 3; i++) {
-            sum += this.gens[i].length
-        }
-        return sum
-    }
+
 
     getID(): string {
         return this.color+this.borderColor
