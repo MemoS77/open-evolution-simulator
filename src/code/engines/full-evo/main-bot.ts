@@ -7,7 +7,7 @@ import {FourDirection} from "../../enums/four-direction"
 import {GoodGens} from "./good-gens"
 import {randomColor} from "../../funcs/utils"
 
-const maxCommand = 40
+const maxCommand = 42
 
 export default class MainBot extends Bot {
 
@@ -171,6 +171,9 @@ export default class MainBot extends Bot {
                 break
             case 39:
                 this.nextCommand(-5)
+                break
+            case 40:
+                this.rY = targetCell ? (this.engine.isPoisonedCell(targetCell) ? 1: 0) : 1
                 break
             }
             step++

@@ -6,7 +6,7 @@ import Point from "../../types/point"
 import {
     idleEnergy,
     mainActionEnergy,
-    maxCellOrganic, maxNotGrowSteps,
+    maxCellOrganic, maxNotGrowSteps, maxOrganicForPoison,
     maxPhotoEnergy,
     minBotEnergy,
     moveEnergy,
@@ -155,10 +155,16 @@ export default class FullEvo extends CellEngine {
 
                 if (filter !==1) {
                     const blue = (filter === 0 || filter === 2) ? Math.floor((c.energy / maxPhotoEnergy) * 150) : 0
-                    const red = (filter === 0 || filter === 3) ? Math.floor((c.organic / maxCellOrganic) * 250) : 0
+                    const red = (filter === 0 || filter === 3)
+                        ?
+                        ((this.isPoisoned({x:i, y:j})) ? 255 :Math.floor((c.organic / maxCellOrganic)* 150))
+                        : 0
                     const green = Math.floor(blue * 0.8)
                     this.ctx.fillStyle = `rgb(${red},${green},${blue})`
-                } else this.ctx.fillStyle = "rgb(0,0,0)"
+                } else {
+                    const red = (this.isPoisoned({x:i, y:j})) ? 255 : 0
+                    this.ctx.fillStyle = `rgb(${red},0,0)`
+                }
 
                 const cx = i * drawCellSize + globalVars.camera.x + cellPadding
                 const cy = j * drawCellSize + globalVars.camera.y + cellPadding
@@ -339,10 +345,25 @@ export default class FullEvo extends CellEngine {
     isDirectionFree(pos: Point, direction: FourDirection): boolean {
         const d = this.pointByDirection(pos, direction)
         if (!d) return false
-        if (this.cells[d.x][d.y].bots.length === 0) return true
+        if ((this.cells[d.x][d.y].bots.length === 0)&&(!this.isPoisoned(d))) return true
         return false
     }
 
+    isPoisoned(p: Point) {
+        const cell = this.cells[p.x][p.y]
+        return this.isPoisonedCell(cell)
+    }
+
+
+    isPoisonedCell(cell: Cell) {
+        return cell.organic>=maxOrganicForPoison
+    }
+
+
+
+    private maxEat(bot: Bot) {
+        return Math.max(bot.energy, minBotEnergy)
+    }
 
 
     private botMainAction(bot: Bot, param: number): void {
@@ -363,7 +384,7 @@ export default class FullEvo extends CellEngine {
 
             if (cell && cell.energy > 0) {
                 // Съедаем органику, соразмерно энергии бота
-                const e = Math.min(Math.max(Math.floor(bot.energy / 2), minBotEnergy), cell.organic)
+                const e = Math.min(this.maxEat(bot), cell.organic)
                 cell.organic -= e
                 bot.addEnergy(e)
             }
@@ -401,7 +422,7 @@ export default class FullEvo extends CellEngine {
             for (let j = 0; j < this.params.size.y; j++) {
                 this.cells[i][j] = {
                     energy: Math.round((this.params.size.y-j)/this.params.size.y*maxPhotoEnergy),
-                    organic: randomInt(0, Math.round(maxCellOrganic/8)),
+                    organic: randomInt(0, Math.round(maxCellOrganic/10)),
                     bots: []
                 }
 
@@ -411,7 +432,7 @@ export default class FullEvo extends CellEngine {
 
 
     getFilterTitles(): string[] {
-        return ["With energy & organic", "No energy & organic", "Energy", "Organic"]
+        return ["With energy & organic", "Only poison", "Energy", "Organic"]
     }
 
     addRandomBot(position: Point): void {
