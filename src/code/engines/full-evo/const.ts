@@ -15,9 +15,9 @@ export const maxPhotoEnergy = 15
 
 export const maxCellOrganic = 700
 
-export const maxBotEnergy = 800 // При переполнении энергии организм погибает
+export const maxBotEnergy = 1000 // При переполнении энергии организм погибает
 
-export const criticalBotEnergy = 700 // Энергия после этого начинает расти не более чем на moveEnergy+1
+//export const criticalBotEnergy = 700 // Энергия после этого начинает расти не более чем на moveEnergy+1
 
 export const idleEnergy = 1
 

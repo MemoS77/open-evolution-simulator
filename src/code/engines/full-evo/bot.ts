@@ -7,7 +7,7 @@ import stem from "./cell-draw/stem"
 import leaf from "./cell-draw/leaf"
 import armor from "./cell-draw/armor"
 import {CellAction} from "./types"
-import {criticalBotEnergy, maxBotEnergy, maxHostCalc, minBotEnergy} from "./const"
+import {maxBotEnergy, minBotEnergy} from "./const"
 
 // Общий класс для всех возможных ботов
 export default abstract class Bot {
@@ -52,33 +52,18 @@ export default abstract class Bot {
     }
 
     addEnergy(energy: number): void {
-        if (this.energy > criticalBotEnergy) {
+        /*if (this.energy > criticalBotEnergy) {
             this.energy += Math.min(minBotEnergy*2, energy)
         } else if (this.energy+energy > criticalBotEnergy) this.energy = criticalBotEnergy
-        else  this.energy += energy
+        else */
+        this.energy += energy
         this.sendEnergy()
         if (this.energy >= maxBotEnergy) this.die()
     }
 
-    // Почитать рекурсивно сколько предков у бота
-    getParentsCount(cnt = 0): number {
-        const parent = this.getHost()
-        if (parent) {
-            cnt++
-            if (cnt>maxHostCalc) return cnt // защита от зацикливания
-            return parent.getParentsCount(cnt)
-        }
-        return cnt
-    }
 
-    isParent(bot: Bot, cnt = 0): boolean {
-        cnt++
-        if (cnt>maxHostCalc) return true
-        const host = this.getHost()
-        if (host === bot) return true
-        if (host) return host.isParent(bot, cnt)
-        return false
-    }
+
+    abstract isSimilar(bot: Bot): boolean
 
 
 
@@ -103,13 +88,23 @@ export default abstract class Bot {
     // Получить хозяина, если есть
     public getHost(): Bot | null {
         const d = invert4Direction(this.direction)
-        const p = this.engine.pointByDirection(this.position, d)
+        let r = this.hostByPoint(this.engine.pointByDirection(this.position, d))
+
+        // У стволовых также учитываем боковые
+        if (r ===null && this.kind === BotKind.Stem) {
+            r = this.hostByPoint(this.engine.pointByDirection(this.position, FourDirection.Left))
+            if (r ===null) r = this.hostByPoint(this.engine.pointByDirection(this.position, FourDirection.Right))
+        }
+        return r
+    }
+
+
+    private hostByPoint(p: Point | null): Bot | null {
         if (p) {
             const cell = this.engine.getFieldCell(p)
-
             if (cell && cell.bots.length > 0) {
                 const bot = this.engine.getBot(cell.bots[0])
-                if (bot && bot.kind === BotKind.Stem)  return bot
+                if (bot && bot.kind === BotKind.Stem) return bot
             }
         }
         return null

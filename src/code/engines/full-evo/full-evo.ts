@@ -52,7 +52,7 @@ export default class FullEvo extends CellEngine {
 
     removeBot(bot: Bot): void {
         if (bot.engineIndex >= 0)  {
-            const e = Math.max(Math.floor(bot.energy/5), minBotEnergy)
+            const e = Math.max(Math.floor(bot.energy/10), minBotEnergy)
             bot.energy = 0
             // В почве остается немного органики
             this.addOrganic(bot.position, e)
@@ -266,7 +266,7 @@ export default class FullEvo extends CellEngine {
                             if (stem===null)  stem = bot
                             else {
                                 stem.mergeStem(bot)
-                                stem.addEnergy(Math.floor(bot.energy/2))
+                                stem.addEnergy(Math.floor(bot.energy))
                                 bot.die()
                             }
 
@@ -310,7 +310,7 @@ export default class FullEvo extends CellEngine {
                 if (owner) {
                     const k = owner.lastAction!.kind
                     if ((k === CellActionKind.Move) || ((k === CellActionKind.MainAction) && (owner.direction === bot.direction))) {
-                        if (k === CellActionKind.MainAction) console.log("MainAction", bot.position, bot.direction, bot.energy)
+                        //if (k === CellActionKind.MainAction) console.log("MainAction", bot.position, bot.direction, bot.energy)
                         bot.lastAction!.kind = CellActionKind.Move
                         bot.lastAction!.param = owner.direction
                     }
@@ -332,14 +332,13 @@ export default class FullEvo extends CellEngine {
                     if (d !== null) bot.position = d
                     break
                 case CellActionKind.TurnLeft:
-
-                    if (bot.kind === BotKind.Stem || bot.getHost()===null) {
+                    if (bot.kind === BotKind.Stem) {
                         bot.direction = turn4Left(bot.direction)
                         bot.delEnergy(turnEnergy)
                     }
                     break
                 case CellActionKind.TurnRight:
-                    if (bot.kind === BotKind.Stem || bot.getHost()===null) {
+                    if (bot.kind === BotKind.Stem) {
                         bot.direction = turn4Right(bot.direction)
                         bot.delEnergy(turnEnergy)
                     }
