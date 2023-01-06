@@ -185,7 +185,7 @@ export default class FullEvo extends CellEngine {
     override  getInfo(): EngineInfo {
         return {
             name: "Full Evo Engine",
-            description: "Cell Plants",
+            description: "Новый движок. Есть половое размножения (обмен одним из двух генов и специализированность клеток)",
             version: 1,
             id: "full-evo"
         }
@@ -430,13 +430,19 @@ export default class FullEvo extends CellEngine {
                 const cell = this.getFieldCell(d)
                 if (cell && bot.energy>minBotEnergy*2) {
                     const e = Math.floor(bot.energy / 2)
-                    const newBot = new MainBot(this, this.nextBotId, param%3, d!, e, bot)
-                    this.addBot(newBot)
+                    this.newBot(param%3, d!, e, bot)
                     bot.delEnergy(e)
                 }
             }
             break
         }
+    }
+
+
+    protected newBot(kind: BotKind, position: Point, energy: number, host: Bot | null): Bot {
+        const bot = new MainBot(this, this.nextBotId, kind, position, energy, host)
+        this.addBot(bot)
+        return bot
     }
 
     addOrganic(pos: Point, amount: number): void {

@@ -1,6 +1,13 @@
 import Point from "./types/point"
 import {drawFPS} from "./funcs/fps"
-import {getCanvasCont, setEnginesList, setFilterList, setParamsList, setViewList} from "./funcs/dom"
+import {
+    getCanvasCont,
+    setEnginesList,
+    setFilterList,
+    setParamsList,
+    setViewList,
+    showEngineDescription
+} from "./funcs/dom"
 import {
     bindFilterMode,
     bindPauseButton,
@@ -36,10 +43,11 @@ export default class App {
     onEngineSelect(index: string | number) {
         this.reset()
         this.engine = engines[+index]
-        //const info = this.engine.getInfo()
+        const info = this.engine.getInfo()
         const params = setParamsList(this.engine)
         setViewList(this.engine.getViewTitles())
         setFilterList(this.engine.getFilterTitles())
+        showEngineDescription(info.description)
         this.engine.init(this.canvas, params.length ? params[0] : null)
         this.engine.clear()
     }
@@ -62,7 +70,9 @@ export default class App {
             }
         })
         bindStartButton(() => this.start())
-        bindResetButton(() => this.reset())
+        bindResetButton(() => {
+            if (confirm("Sure reset?")) this.reset()
+        })
         bindPauseButton(() => this.pause())
         bindStepButton(() => {
             this.oneStep()

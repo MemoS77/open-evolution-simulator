@@ -6,6 +6,7 @@ export default class FullEvo2 extends FullEvo {
     override  getInfo(): EngineInfo {
         const info = super.getInfo()
         info.version = 2
+        info.description = "Изменен принцип столкновения клеток и некоторые другие вещи"
         return info
     }
 
