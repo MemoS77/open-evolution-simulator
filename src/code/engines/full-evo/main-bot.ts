@@ -7,11 +7,12 @@ import {FourDirection} from "../../enums/four-direction"
 import {randomColor} from "../../funcs/utils"
 
 const maxCommand = 42
-const genCount = 2
+
 const maxMutations = 30
 
 export default class MainBot extends Bot {
     private currentGenIndex = 0
+    protected genCount: number
 
     isSimilar(bot: Bot): boolean {
         return bot.getID() === this.getID()
@@ -44,8 +45,22 @@ export default class MainBot extends Bot {
         return g.code[this.cursor]
     }
 
-    override getAction(): CellAction {
 
+    caseGen(): void {
+        const host = this.getHost()
+        const needIndex = host ? 1 : 0
+        this.switchGen(needIndex)
+    }
+
+
+    protected switchGen(newGenIndex: number): void {
+        if (newGenIndex!==this.currentGenIndex) {
+            this.currentGenIndex = newGenIndex
+            this.cursor = 0
+        }
+    }
+
+    override getAction(): CellAction {
         // Можно и не добавлять, это контролирует движок
         if (this.kind!==BotKind.Stem) return   {
             kind: CellActionKind.MainAction,
@@ -53,18 +68,12 @@ export default class MainBot extends Bot {
         }
 
 
-        let kind = null
-        const host = this.getHost()
-
-        if (host && this.currentGenIndex===0) {
-            this.currentGenIndex = 1
-            this.cursor = 0
-        } else if (host === null && this.currentGenIndex===1) {
-            this.currentGenIndex = 0
-            this.cursor = 0
-        }
-
+        this.caseGen()
         const g = this.getGen()
+
+        const host = this.getHost()
+        let kind = null
+
         let step = 0
 
         let p = this.engine.pointByDirection(this.position, this.direction, this.rX%4)
@@ -242,13 +251,14 @@ export default class MainBot extends Bot {
     }
 
     override init(parentBot: Bot | null ): void {
+        this.genCount = this.genCount ?? 2
         this.cursor = 0
         this.gens = []
         this.currentGenIndex = 0
 
         if (parentBot) {
             const p = parentBot as MainBot
-            for (let i = 0; i < genCount; i++) {
+            for (let i = 0; i < this.genCount; i++) {
                 this.gens.push(this.copyGen(p.gens[i]))
             }
             if (this.kind === BotKind.Stem) this.mutate()
@@ -258,7 +268,6 @@ export default class MainBot extends Bot {
 
             const goodProc = this.engine.params!.conf!.goodBotsProbability! || 0
             const mxGood = goodGens.length-1
-            console.log(goodProc)
 
 
             if ((mxGood>=0) && (randomInt(0, 100) < goodProc)) {
@@ -269,7 +278,7 @@ export default class MainBot extends Bot {
             }
             else
             {
-                for (let i = 0; i < genCount; i++) {
+                for (let i = 0; i < this.genCount; i++) {
                     this.gens.push(this.generateGen())
                 }
             }
@@ -277,7 +286,7 @@ export default class MainBot extends Bot {
     }
 
     mutate(): void {
-        const idx = randomInt(0, genCount-1)
+        const idx = randomInt(0, this.genCount-1)
         const mode = randomInt(0, 50)
         if (mode<3) {
             switch (mode) {
@@ -309,7 +318,7 @@ export default class MainBot extends Bot {
 
     // Половое размножение
     override mergeStem(bot: MainBot): void {
-        const idx = randomInt(0, genCount-1)
+        const idx = randomInt(0, this.genCount-1)
         //console.log("Merge Stem",idx)
         this.gens[idx] = this.copyGen(bot.gens[idx])
     }

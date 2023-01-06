@@ -447,7 +447,7 @@ export default class FullEvo extends CellEngine {
 
 
     protected newBot(kind: BotKind, position: Point, energy: number, host: Bot | null): Bot {
-        const bot = new MainBot(this, this.nextBotId, kind, position, energy, host)
+        const bot = new (this.getBotClass())(this, this.nextBotId, kind, position, energy, host)
         this.addBot(bot)
         return bot
     }
@@ -525,8 +525,12 @@ export default class FullEvo extends CellEngine {
         return ["With energy & organic", "Only bots", "Energy", "Organic"]
     }
 
-    addRandomBot(position: Point): void {
-        const bot = new MainBot(this,
+    protected getBotClass() {
+        return MainBot
+    }
+
+    private addRandomBot(position: Point): void {
+        const bot = new (this.getBotClass())(this,
             this.nextBotId,
             BotKind.Stem,
             position,

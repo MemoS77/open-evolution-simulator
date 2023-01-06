@@ -5,6 +5,7 @@ import {Cell} from "./types"
 import Bot from "./bot"
 import {BotKind} from "./enums"
 import {minBotEnergy} from "./const"
+import MainBot2 from "./main-bot-2"
 
 const leafDamage = 1
 
@@ -20,12 +21,17 @@ export default class FullEvo2 extends FullEvo {
         const info = super.getInfo()
         info.version = 2
         info.description = "Изменен принцип столкновения клеток. На одной клетке может быть несколько ботов. Но, стволовые сливаются сразу, " +
-            "а шипы и оставшаяся стволовая наносят взаимный урон. У шипов гораздо больше."
+            "а шипы и оставшаяся стволовая наносят взаимный урон. У шипов гораздо больше. у ботов 3 гена, включающиеся в зависимости от оставшейся энергии. "
         return info
     }
 
     override getGoodGens(): string[] {
         return goodGens_2
+    }
+
+
+    protected getBotClass() {
+        return MainBot2
     }
 
     private getDamage(kind: BotKind): number {
