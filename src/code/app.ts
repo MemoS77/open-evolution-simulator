@@ -58,6 +58,7 @@ export default class App {
         this.canvas.addEventListener("mousemove", (e) => {
             if (e.buttons===4) {
                 this.engine.onDrag(e.movementX, e.movementY)
+                this.engine.draw()
             }
         })
         bindStartButton(() => this.start())
