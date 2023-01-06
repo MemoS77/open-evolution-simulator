@@ -4,7 +4,7 @@ import Point from "../types/point"
 import {FourDirection} from "../enums/four-direction"
 
 
-export const drawCellSize = 12
+export const drawCellSize = 11
 export const cellPadding = 0
 export const innerCellSize = drawCellSize - cellPadding * 2
 export const dPadding = innerCellSize* 0.2

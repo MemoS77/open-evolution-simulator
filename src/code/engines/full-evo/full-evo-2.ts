@@ -5,11 +5,15 @@ import {Cell} from "./types"
 import Bot from "./bot"
 import {BotKind} from "./enums"
 import {minBotEnergy} from "./const"
+import MainBot2 from "./main-bot-2"
 
+const leafDamage = 1
 
-const leafDamage = minBotEnergy * 3
-const stemDamage = leafDamage * 5
-const armorDamage = stemDamage * 2
+// При высокой энергии и постоянном притоке, стволовую будет не так просто убить
+// Если шип одиночный, у стволовой есть шанс его уничтожит
+
+const stemDamage = minBotEnergy * 2
+const armorDamage = stemDamage * 10
 
 
 export default class FullEvo2 extends FullEvo {
@@ -17,12 +21,17 @@ export default class FullEvo2 extends FullEvo {
         const info = super.getInfo()
         info.version = 2
         info.description = "Изменен принцип столкновения клеток. На одной клетке может быть несколько ботов. Но, стволовые сливаются сразу, " +
-            "а остальные наносят друг другу урон в зависимости от вида."
+            "а шипы и оставшаяся стволовая наносят взаимный урон. У шипов гораздо больше. у ботов 3 гена, включающиеся в зависимости от оставшейся энергии. "
         return info
     }
 
     override getGoodGens(): string[] {
         return goodGens_2
+    }
+
+
+    protected getBotClass() {
+        return MainBot2
     }
 
     private getDamage(kind: BotKind): number {
@@ -51,7 +60,12 @@ export default class FullEvo2 extends FullEvo {
                         stem.addEnergy(Math.floor(bot.energy))
                         bot.die()
                     }
-                } else noStemCells = true
+                } else {
+                    noStemCells = true
+                    if (bot.kind === BotKind.Leaf) {
+                        bot.die()
+                    }
+                }
             }
         })
 
@@ -65,25 +79,14 @@ export default class FullEvo2 extends FullEvo {
                         if (botId !== botId2) {
                             const bot2 = this.getBot(botId)
                             if (bot2) {
-                                /*if (bot2.kind === BotKind.Stem && bot.isSimilar(bot2)) {
-                                        // Не атакуем стволовые клетки, если это свой вид,
-                                        // а умираем
-                                        //bot.addEnergy(bot2.energy)
-                                        bot.die()
-                                    } else*/
-                                {
-                                    const e = this.getDamage(bot.kind)
-                                    bot2.delEnergy(this.getDamage(bot.kind))
-                                    this.addOrganic(bot.position, Math.round(e / 10))
-                                }
+                                const e = Math.min(this.getDamage(bot.kind), Math.floor(bot.energy/3))
+                                bot2.delEnergy(this.getDamage(bot.kind))
+                                this.addOrganic(bot.position, Math.ceil(e / 10))
                             }
                         }
                     })
                 }
             })
-            //this.indexBots()
-            //} while (cell.bots.length > 1)
-            //console.log('Winner', this.getBot(cell.bots[0]))
         }
     }
 

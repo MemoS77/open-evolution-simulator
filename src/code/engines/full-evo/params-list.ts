@@ -8,7 +8,7 @@ export interface PlantsEngineParams extends EngineParams {
 
 export const paramsList: PlantsEngineParams[] = [{
     name: "Standard map. New bots",
-    size: {x: 144, y: 80},
+    size: {x: 145, y: 85},
     count: 500,
     conf: {
         centerNotEnergy: true,
@@ -17,7 +17,7 @@ export const paramsList: PlantsEngineParams[] = [{
 },
 {
     name: "Standard map. With prepared bots",
-    size: {x: 144, y: 80},
+    size: {x: 145, y: 85},
     count: 500,
     conf: {
         centerNotEnergy: true,
