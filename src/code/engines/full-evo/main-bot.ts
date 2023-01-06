@@ -4,7 +4,6 @@ import {CellAction, drawColors, Gen} from "./types"
 import {randomInt} from "../../funcs/buttons"
 import {maxGenLength, maxGenSteps, minGenLength} from "./const"
 import {FourDirection} from "../../enums/four-direction"
-import {GoodGens} from "./good-gens"
 import {randomColor} from "../../funcs/utils"
 
 const maxCommand = 42
@@ -254,10 +253,19 @@ export default class MainBot extends Bot {
             }
             if (this.kind === BotKind.Stem) this.mutate()
         } else {
-            if (randomInt(0, 100) < this.engine.params!.conf!.goodBotsProbability! || 0) {
-                const mx = GoodGens.length-1
-                const idx = randomInt(0, mx)
-                this.gens =  JSON.parse(GoodGens[idx])
+
+            const goodGens = this.engine.getGoodGens()
+
+            const goodProc = this.engine.params!.conf!.goodBotsProbability! || 0
+            const mxGood = goodGens.length-1
+            console.log(goodProc)
+
+
+            if ((mxGood>=0) && (randomInt(0, 100) < goodProc)) {
+
+                const idx = randomInt(0, mxGood)
+                this.gens = JSON.parse(goodGens[idx])
+
             }
             else
             {

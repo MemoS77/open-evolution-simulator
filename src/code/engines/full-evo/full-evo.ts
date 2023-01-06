@@ -20,6 +20,7 @@ import {turn4Left, turn4Right} from "../../funcs/utils"
 import {BotKind, CellActionKind} from "./enums"
 import {FourDirection} from "../../enums/four-direction"
 import MainBot from "./main-bot"
+import {goodGens_1} from "./good-gens"
 
 type BInf = {
     energy: number,
@@ -175,6 +176,10 @@ export default class FullEvo extends CellEngine {
         return null
     }
 
+
+    getGoodGens(): string[] {
+        return goodGens_1
+    }
 
 
     override  getInfo(): EngineInfo {
