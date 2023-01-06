@@ -49,7 +49,7 @@ export const paramsList: PlantsEngineParams[] = [{
 {
     name: "One area. New bots",
     size: {x: 80, y: 50},
-    count: 400,
+    count: 200,
     conf: {
 
     }
@@ -58,9 +58,9 @@ export const paramsList: PlantsEngineParams[] = [{
 {
     name: "One area. With prepared bots",
     size: {x: 80, y: 50},
-    count: 400,
+    count: 200,
     conf: {
-        goodBotsProbability: 10
+        goodBotsProbability: 20
     }
 },
 

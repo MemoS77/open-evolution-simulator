@@ -38,6 +38,22 @@ export function bindFilterMode() {
     })
 }
 
+export function bindFullScreen() {
+    const button = document.getElementById("full-screen-button")! as HTMLButtonElement
+    button.addEventListener("click", () => {
+        const doc = document.documentElement//document.getElementById('oes-canvas')! as HTMLCanvasElement
+        if (!document.fullscreenElement) {
+            doc.requestFullscreen().catch(err => {
+                alert(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`)
+            })
+        } else {
+            if (document.exitFullscreen) {
+                document.exitFullscreen()
+            }
+        }
+    })
+}
+
 export function bindSpeed() {
     const select = document.getElementById("speed")! as HTMLSelectElement
     select.addEventListener("change", () => {

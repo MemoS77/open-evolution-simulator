@@ -9,7 +9,7 @@ import {
     showEngineDescription
 } from "./funcs/dom"
 import {
-    bindFilterMode,
+    bindFilterMode, bindFullScreen,
     bindPauseButton,
     bindResetButton,
     bindShowMode,
@@ -37,6 +37,7 @@ export default class App {
         setEnginesList(engines)
         this.onEngineSelect(0)
         this.loop()
+        this.oneStep()
     }
 
 
@@ -80,15 +81,20 @@ export default class App {
         bindShowMode()
         bindFilterMode()
         bindSpeed()
+        bindFullScreen()
 
 
         const select = document.getElementById("engines-list")! as HTMLSelectElement
-        select.addEventListener("change", (e) => this.onEngineSelect((e.target as HTMLOptionElement).value))
+        select.addEventListener("change", (e) => {
+            this.onEngineSelect((e.target as HTMLOptionElement).value)
+            this.oneStep()
+        })
 
         const paramsSelect = document.getElementById("fields-list")! as HTMLSelectElement
         paramsSelect.addEventListener("change", (e) => {
             const index = +(e.target as HTMLOptionElement).value
             this.engine.onParamsListSelect(index)
+            this.oneStep()
         })
 
 
@@ -100,6 +106,8 @@ export default class App {
 
 
     private initCanvasSize(): void {
+        this.canvas.width = 1
+        this.canvas.height = 1
         this.viewSize = { x: this.cont.clientWidth, y: this.cont.clientHeight }
         this.canvas.width = this.viewSize.x
         this.canvas.height = this.viewSize.y

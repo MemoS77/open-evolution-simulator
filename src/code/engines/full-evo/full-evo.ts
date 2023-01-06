@@ -209,7 +209,7 @@ export default class FullEvo extends CellEngine {
         })
     }
 
-    private indexBots(): void {
+    protected indexBots(): void {
         this.clearBotsIndex()
         this.bots.forEach(bot => {
             const cell = this.getFieldCell(bot.position)
