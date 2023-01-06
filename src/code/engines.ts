@@ -5,8 +5,8 @@ import FullEvo from "./engines/full-evo/full-evo"
 import FullEvo2 from "./engines/full-evo/full-evo-2"
 
 const engines: Engine[] = [
-    new FullEvo(),
     new FullEvo2(),
+    new FullEvo(),
     new SpaceGravityEngine(),
     new SimpleEvo(),
 
