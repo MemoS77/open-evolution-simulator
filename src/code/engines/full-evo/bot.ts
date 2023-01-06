@@ -8,6 +8,7 @@ import leaf from "./cell-draw/leaf"
 import armor from "./cell-draw/armor"
 import {CellAction, drawColors} from "./types"
 import {maxBotEnergy, minBotEnergy} from "./const"
+import {globalVars} from "../../inc/const"
 
 // Общий класс для всех возможных ботов
 export default abstract class Bot {
@@ -104,8 +105,10 @@ export default abstract class Bot {
         if (p) {
             const cell = this.engine.getFieldCell(p)
             if (cell && cell.bots.length > 0) {
-                const bot = this.engine.getBot(cell.bots[0])
-                if (bot && bot.kind === BotKind.Stem && this.isSimilar(bot)) return bot
+                for (let i = 0; i < cell.bots.length; i++) {
+                    const bot = this.engine.getBot(cell.bots[i])
+                    if (bot && bot.kind === BotKind.Stem && this.isSimilar(bot)) return bot
+                }
             }
         }
         return null
@@ -124,7 +127,19 @@ export default abstract class Bot {
     abstract getColors(): drawColors
 
     draw(ctx: CanvasRenderingContext2D): void {
-        const colors = this.getColors()
+        let colors
+        if (globalVars.showMode === 1) {
+            const def = 50
+            const green = Math.floor((this.energy + def) / (def + maxBotEnergy) * 255)
+            const color = `rgb(0,${green},0)`
+            colors = {
+                borderColor: color,
+                color: `rgb(0,${green},0)`,
+            }
+        } else
+            colors = this.getColors()
+
+
         switch (this.kind) {
         case BotKind.Stem:
             stem(ctx, this.direction, this.position, colors.borderColor, colors.color)

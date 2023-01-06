@@ -265,8 +265,15 @@ export default class FullEvo extends CellEngine {
                 }
             })
         }
-
     }
+
+
+
+
+    getViewTitles(): string[] {
+        return ["Color by genome", "Energy"]
+    }
+
 
     // Обработать ботов на одной ячейке
     workCollisions(): void {
@@ -477,7 +484,7 @@ export default class FullEvo extends CellEngine {
     getSunEnergyByRow(x: number): number {
         // Освещение зависит от цикла солнца
         return Math.round((maxPhotoEnergy-minPhotoEnergy)*(Math.sin(
-            (this.cycle/200 + x * 2 * Math.PI / this.params.size.x)
+            (this.cycle/250 + x * 2 * Math.PI / this.params.size.x)
         )+1))+minPhotoEnergy
     }
 
