@@ -482,6 +482,10 @@ export default class FullEvo extends CellEngine {
         if (this.params.conf.centerNotEnergy) {
             minZoneX = this.params.size.x*cf2
             maxZoneX = this.params.size.x*cf
+
+        }
+
+        if (this.params.conf.verticalNoEnergy) {
             minZoneY = this.params.size.y*cf2
             maxZoneY = this.params.size.y*cf
         }

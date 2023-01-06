@@ -9,7 +9,7 @@ import {randomColor} from "../../funcs/utils"
 
 const maxCommand = 42
 const genCount = 2
-const maxMutations = 10
+const maxMutations = 50
 
 export default class MainBot extends Bot {
     private currentGenIndex = 0
@@ -73,9 +73,11 @@ export default class MainBot extends Bot {
         if (p && y>0) {
             p = this.engine.pointByDirection(p, y===1 ? FourDirection.Left : FourDirection.Right)
         }
+
         const targetCell = p ? this.engine.getFieldCell(p) : null
         const targetBot = targetCell ? (targetCell.bots.length ? this.engine.getBot(targetCell.bots[0]) : null) : null
-        const isSimilar = targetBot && this.isSimilar(targetBot)
+        const isSimilar = targetBot!==null && this.isSimilar(targetBot)
+
 
 
         do {
@@ -252,12 +254,10 @@ export default class MainBot extends Bot {
             }
             if (this.kind === BotKind.Stem) this.mutate()
         } else {
-            if (randomInt(0, 100) < 0) {
+            if (randomInt(0, 100) < this.engine.params!.conf!.goodBotsProbability! || 0) {
                 const mx = GoodGens.length-1
                 const idx = randomInt(0, mx)
-                for (let j=0; j<genCount; j++) {
-                    this.gens[j] =  JSON.parse(GoodGens[idx])
-                }
+                this.gens =  JSON.parse(GoodGens[idx])
             }
             else
             {
@@ -294,7 +294,7 @@ export default class MainBot extends Bot {
             if (this.gens[idx].mutations > maxMutations) {
                 this.gens[idx].color = randomColor()
                 this.gens[idx].mutations = 0
-                console.log("New Color! ", idx, this.gens[idx].color)
+                //console.log("New Color! ", idx, this.gens[idx].color)
             }
         }
     }
