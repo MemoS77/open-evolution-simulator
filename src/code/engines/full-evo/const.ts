@@ -15,9 +15,9 @@ export const maxPhotoEnergy = 12
 
 export const minPhotoEnergy = 2
 
-export const maxCellOrganic = 1100
+export const maxCellOrganic = 1000
 
-export const maxBotEnergy = 800 // Организм не может набрать больше
+export const maxBotEnergy = 400 // Организм не может набрать больше
 
 //export const criticalBotEnergy = 700 // Энергия после этого начинает расти не более чем на moveEnergy+1
 
@@ -36,4 +36,4 @@ export const minBotEnergy = Math.max(idleEnergy, moveEnergy, turnEnergy, mainAct
 
 export const maxNotGrowSteps = 150
 
-export const maxOrganicForPoison = 1000
+export const maxOrganicForPoison = 900

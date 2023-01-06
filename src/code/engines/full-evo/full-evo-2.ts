@@ -7,8 +7,12 @@ import {BotKind} from "./enums"
 import {minBotEnergy} from "./const"
 
 const leafDamage = 1
-const stemDamage = minBotEnergy * 3
-const armorDamage = stemDamage * 5
+
+// При высокой энергии и постоянном притоке, стволовую будет не так просто убить
+// Если шип одиночный, у стволовой есть шанс его уничтожит
+
+const stemDamage = minBotEnergy * 2
+const armorDamage = stemDamage * 10
 
 
 export default class FullEvo2 extends FullEvo {
@@ -69,9 +73,9 @@ export default class FullEvo2 extends FullEvo {
                         if (botId !== botId2) {
                             const bot2 = this.getBot(botId)
                             if (bot2) {
-                                const e = this.getDamage(bot.kind)
+                                const e = Math.min(this.getDamage(bot.kind), Math.floor(bot.energy/3))
                                 bot2.delEnergy(this.getDamage(bot.kind))
-                                this.addOrganic(bot.position, Math.round(e / 10))
+                                this.addOrganic(bot.position, Math.ceil(e / 10))
                             }
                         }
                     })

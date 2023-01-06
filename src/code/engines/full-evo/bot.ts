@@ -47,13 +47,9 @@ export default abstract class Bot {
     }
 
     addEnergy(energy: number): void {
-        /*if (this.energy > criticalBotEnergy) {
-            this.energy += Math.min(minBotEnergy*2, energy)
-        } else if (this.energy+energy > criticalBotEnergy) this.energy = criticalBotEnergy
-        else */
         this.energy += energy
         this.sendEnergy()
-        if (this.energy >= maxBotEnergy)  this.energy = maxBotEnergy // this.die()
+        if (this.energy >= maxBotEnergy)  this.energy = maxBotEnergy
     }
 
 
@@ -64,13 +60,23 @@ export default abstract class Bot {
 
     // Избыток энергии отправляется боту в противоположном направлении
     sendEnergy(): void {
-        const host = this.getHost()
-        if (host && (host.energy+minBotEnergy<this.energy)) {
-            const energy = Math.floor((this.energy - host.energy)/2)
-            this.delEnergy(energy)
-            host.addEnergy(energy)
-            //console.log("send energy", energy, "from", this.engineIndex, "to", host.engineIndex)
-        }
+        const bots = []
+        let host = this.hostByPoint(this.engine.pointByDirection(this.position, invert4Direction(this.direction)), false)
+        if (host) bots.push(host)
+        host = this.hostByPoint(this.engine.pointByDirection(this.position, FourDirection.Left))
+        if (host) bots.push(host)
+        host = this.hostByPoint(this.engine.pointByDirection(this.position, FourDirection.Right), false)
+        if (host) bots.push(host)
+
+        const e = minBotEnergy*5
+
+        bots.forEach((host) => {
+            if (host.energy+e<this.energy) {
+                this.delEnergy(e)
+                host.addEnergy(e)
+            }
+        })
+
     }
 
 
@@ -82,32 +88,17 @@ export default abstract class Bot {
 
     // Получить хозяина, если есть
     public getHost(): Bot | null {
-        const d = invert4Direction(this.direction)
-        let r = this.hostByPoint(this.engine.pointByDirection(this.position, d))
-
-        // У стволовых также учитываем боковые
-        if (r ===null && this.kind === BotKind.Stem) {
-            r = this.hostByPoint(this.engine.pointByDirection(this.position, FourDirection.Left))
-            if (r ===null) {
-                r = this.hostByPoint(this.engine.pointByDirection(this.position, FourDirection.Right))
-
-            }
-        }
-
-
-
-
-        return r
+        return this.hostByPoint(this.engine.pointByDirection(this.position, invert4Direction(this.direction)))
     }
 
 
-    private hostByPoint(p: Point | null): Bot | null {
+    private hostByPoint(p: Point | null, onlyStem = true): Bot | null {
         if (p) {
             const cell = this.engine.getFieldCell(p)
             if (cell && cell.bots.length > 0) {
                 for (let i = 0; i < cell.bots.length; i++) {
                     const bot = this.engine.getBot(cell.bots[i])
-                    if (bot && bot.kind === BotKind.Stem && this.isSimilar(bot)) return bot
+                    if (bot && (!onlyStem || bot.kind === BotKind.Stem) && this.isSimilar(bot)) return bot
                 }
             }
         }

@@ -8,7 +8,7 @@ import {randomColor} from "../../funcs/utils"
 
 const maxCommand = 42
 const genCount = 2
-const maxMutations = 50
+const maxMutations = 30
 
 export default class MainBot extends Bot {
     private currentGenIndex = 0

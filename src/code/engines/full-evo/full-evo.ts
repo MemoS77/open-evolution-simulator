@@ -53,7 +53,7 @@ export default class FullEvo extends CellEngine {
 
     removeBot(bot: Bot): void {
         if (bot.engineIndex >= 0)  {
-            const e = Math.max(Math.floor(bot.energy/5), minBotEnergy)
+            const e = Math.max(Math.floor(bot.energy/10), minBotEnergy)
             bot.energy = 0
             // В почве остается немного органики
             this.addOrganic(bot.position, e)
@@ -484,7 +484,7 @@ export default class FullEvo extends CellEngine {
     getSunEnergyByRow(x: number): number {
         // Освещение зависит от цикла солнца
         return Math.round((maxPhotoEnergy-minPhotoEnergy)*(Math.sin(
-            (this.cycle/250 + x * 2 * Math.PI / this.params.size.x)
+            (this.cycle/300 + x * 2 * Math.PI / (this.params.size.x-1))
         )+1))+minPhotoEnergy
     }
 
