@@ -61,17 +61,25 @@ export default abstract class Bot {
     // Избыток энергии отправляется боту в противоположном направлении
     sendEnergy(): void {
         const bots = []
-        let host = this.hostByPoint(this.engine.pointByDirection(this.position, invert4Direction(this.direction)), false)
-        if (host) bots.push(host)
-        host = this.hostByPoint(this.engine.pointByDirection(this.position, FourDirection.Left))
-        if (host) bots.push(host)
-        host = this.hostByPoint(this.engine.pointByDirection(this.position, FourDirection.Right), false)
-        if (host) bots.push(host)
 
-        const e = minBotEnergy*5
+        if (this.kind === BotKind.Stem) {
+            let host = this.hostByPoint(this.engine.pointByDirection(this.position, FourDirection.Left), false)
+            if (host) bots.push(host)
+            host = this.hostByPoint(this.engine.pointByDirection(this.position, FourDirection.Right), false)
+            if (host) bots.push(host)
+            host = this.hostByPoint(this.engine.pointByDirection(this.position, FourDirection.Up), false)
+            if (host) bots.push(host)
+            host = this.hostByPoint(this.engine.pointByDirection(this.position, FourDirection.Down), false)
+            if (host) bots.push(host)
+        } else {
+            const host = this.hostByPoint(this.engine.pointByDirection(this.position, invert4Direction(this.direction)), false)
+            if (host) bots.push(host)
+        }
+
+        const e = minBotEnergy*2
 
         bots.forEach((host) => {
-            if (host.energy+e<this.energy) {
+            if (host.energy+e*2<this.energy) {
                 this.delEnergy(e)
                 host.addEnergy(e)
             }

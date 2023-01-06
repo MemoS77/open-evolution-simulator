@@ -404,7 +404,7 @@ export default class FullEvo extends CellEngine {
 
 
     private maxEat(bot: Bot) {
-        return Math.max(bot.energy*3, minBotEnergy*3)
+        return Math.max(bot.energy*2, minBotEnergy*5)
     }
 
 
