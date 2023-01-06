@@ -6,6 +6,7 @@
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Open Evolution Simulator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.scss">
 </head>
 <body>
@@ -13,14 +14,25 @@
     <div id="oes-canvas-cont">
     </div>
     <div id="controls-cont">
+        <div id="logo">Open Evolution Simulator</div>
+        <div>
         <button id="start-button">Start</button>
         <button id="pause-button">Pause</button>
-        <button id="reset-button">Reset</button>
+        <button id="reset-button" class="bg-red">Reset</button>
         <button id="step-button">Step</button>
+        <button id="full-screen-button">Full Screen</button>
+        </div>
+        <div>
         <select id="engines-list">
             <option>Basic Engine</option>
         </select>
+        </div>
+        <div  id="engine-description" class="card">
+        </div>
+        <div>
         <select id="fields-list"></select>
+            </div>
+            <div>
         <select id="show-mode">
             <option value="0">View 0</option>
             <option value="1">View 1</option>
@@ -29,6 +41,8 @@
             <option value="4">View 4</option>
             <option value="5">View 5</option>
         </select>
+        </div>
+        <div>
         <select id="filter-mode">
             <option value="0">Filter 0</option>
             <option value="1">Filter 1</option>
@@ -37,6 +51,8 @@
             <option value="4">Filter 4</option>
             <option value="5">Filter 5</option>
         </select>
+        </div>
+        <div>
         <select id="speed">
             <option value="1">Speed x1</option>
             <option value="2">Speed x2</option>
@@ -47,7 +63,9 @@
             <option value="100">Speed x100</option>
             <option value="300">Speed x300</option>
         </select>
+        </div>
     </div>
+    <div id="toggle-menu"></div>
 </div>
 <script src="code/index.ts" type="module"></script>
 </body>

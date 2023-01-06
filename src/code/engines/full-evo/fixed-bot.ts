@@ -1,5 +1,5 @@
 import Bot from "./bot"
-import {CellAction} from "./types"
+import {CellAction, drawColors} from "./types"
 import {randomInt} from "../../funcs/buttons"
 
 /**
@@ -19,8 +19,19 @@ export default class FixedBot extends Bot {
         // Nothing
     }
 
-    getID(): string {
+    override getID(): string {
         return "1"
+    }
+
+    override isSimilar(): boolean {
+        return true
+    }
+
+    override getColors(): drawColors {
+        return {
+            color: "red",
+            borderColor: "black"
+        }
     }
 
 }

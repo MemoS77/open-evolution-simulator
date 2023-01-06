@@ -1,8 +1,15 @@
 import Point from "./types/point"
 import {drawFPS} from "./funcs/fps"
-import {getCanvasCont, setEnginesList, setFilterList, setParamsList, setViewList} from "./funcs/dom"
 import {
-    bindFilterMode,
+    getCanvasCont,
+    setEnginesList,
+    setFilterList,
+    setParamsList,
+    setViewList,
+    showEngineDescription
+} from "./funcs/dom"
+import {
+    bindFilterMode, bindFullScreen,
     bindPauseButton,
     bindResetButton,
     bindShowMode,
@@ -30,16 +37,18 @@ export default class App {
         setEnginesList(engines)
         this.onEngineSelect(0)
         this.loop()
+        this.oneStep()
     }
 
 
     onEngineSelect(index: string | number) {
         this.reset()
         this.engine = engines[+index]
-        //const info = this.engine.getInfo()
+        const info = this.engine.getInfo()
         const params = setParamsList(this.engine)
         setViewList(this.engine.getViewTitles())
         setFilterList(this.engine.getFilterTitles())
+        showEngineDescription(info.description)
         this.engine.init(this.canvas, params.length ? params[0] : null)
         this.engine.clear()
     }
@@ -58,10 +67,13 @@ export default class App {
         this.canvas.addEventListener("mousemove", (e) => {
             if (e.buttons===4) {
                 this.engine.onDrag(e.movementX, e.movementY)
+                this.engine.draw()
             }
         })
         bindStartButton(() => this.start())
-        bindResetButton(() => this.reset())
+        bindResetButton(() => {
+            if (confirm("Sure reset?")) this.reset()
+        })
         bindPauseButton(() => this.pause())
         bindStepButton(() => {
             this.oneStep()
@@ -69,15 +81,20 @@ export default class App {
         bindShowMode()
         bindFilterMode()
         bindSpeed()
+        bindFullScreen()
 
 
         const select = document.getElementById("engines-list")! as HTMLSelectElement
-        select.addEventListener("change", (e) => this.onEngineSelect((e.target as HTMLOptionElement).value))
+        select.addEventListener("change", (e) => {
+            this.onEngineSelect((e.target as HTMLOptionElement).value)
+            this.oneStep()
+        })
 
         const paramsSelect = document.getElementById("fields-list")! as HTMLSelectElement
         paramsSelect.addEventListener("change", (e) => {
             const index = +(e.target as HTMLOptionElement).value
             this.engine.onParamsListSelect(index)
+            this.oneStep()
         })
 
 
@@ -89,6 +106,8 @@ export default class App {
 
 
     private initCanvasSize(): void {
+        this.canvas.width = 1
+        this.canvas.height = 1
         this.viewSize = { x: this.cont.clientWidth, y: this.cont.clientHeight }
         this.canvas.width = this.viewSize.x
         this.canvas.height = this.viewSize.y

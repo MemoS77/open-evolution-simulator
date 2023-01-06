@@ -16,10 +16,11 @@ import {
 import {globalVars, infoFont} from "../../inc/const"
 import Bot from "./bot"
 import {randomInt} from "../../funcs/buttons"
-import {randomColor, turn4Left, turn4Right} from "../../funcs/utils"
+import {turn4Left, turn4Right} from "../../funcs/utils"
 import {BotKind, CellActionKind} from "./enums"
 import {FourDirection} from "../../enums/four-direction"
 import MainBot from "./main-bot"
+import {goodGens_1} from "./good-gens"
 
 type BInf = {
     energy: number,
@@ -109,10 +110,11 @@ export default class FullEvo extends CellEngine {
                     v.cnt++
                     all.set(id, v)
                 } else {
+                    const colors = b.getColors()
                     const v: BInf = {
                         gen: JSON.stringify(b.gens),
-                        color: b.color,
-                        borderColor: b.borderColor,
+                        color: colors.color,
+                        borderColor: colors.borderColor,
                         energy: b.energy,
                         cnt: 1
                     }
@@ -128,20 +130,8 @@ export default class FullEvo extends CellEngine {
 
             for (let i = 0; i < Math.min(3, bots.length-1); i++) {
                 const b = bots[i]
-                console.log(b.cnt + " " + b.energy + " %c" + b.gen, "background-color: " + b.color + "; color: " + b.borderColor + ";font-size:10pt;")
+                console.log("%c" + b.gen, "background-color: " + b.color + "; color: " + b.borderColor + ";font-size:10pt;")
             }
-
-
-
-
-            /*
-            const bots = Array.from(this.bots.values())
-            bots.sort((a, b) => b.energy - a.energy)
-            bots.forEach((bot, i) => {
-                if (i < 5) {
-                    console.log("%c"+JSON.stringify((bot as MainBot).gens), "background-color: " + bot.color + "; color: " + bot.borderColor + ";font-size:10pt;")
-                }
-            })*/
         }
     }
 
@@ -187,11 +177,15 @@ export default class FullEvo extends CellEngine {
     }
 
 
+    getGoodGens(): string[] {
+        return goodGens_1
+    }
+
 
     override  getInfo(): EngineInfo {
         return {
             name: "Full Evo Engine",
-            description: "Cell Plants",
+            description: "Новый движок. Есть половое размножения (обмен одним из двух генов и специализированность клеток)",
             version: 1,
             id: "full-evo"
         }
@@ -215,7 +209,7 @@ export default class FullEvo extends CellEngine {
         })
     }
 
-    private indexBots(): void {
+    protected indexBots(): void {
         this.clearBotsIndex()
         this.bots.forEach(bot => {
             const cell = this.getFieldCell(bot.position)
@@ -226,14 +220,10 @@ export default class FullEvo extends CellEngine {
     }
 
 
-    /*
-    clearDeadBots(): void {
-        this.bots.forEach(bot => {
-            if (bot.energy<minBotEnergy) bot.die()
-        })
-    }
 
- */
+
+
+
 
     workCollision(cell: Cell): void {
         // Боты на одной ячейке
@@ -367,13 +357,19 @@ export default class FullEvo extends CellEngine {
         this.indexBots()
         this.workCollisions()
 
+        this.indexBots()
+
         // Клетки без хоста, умирают
         this.bots.forEach(bot => {
             if (bot.kind !== BotKind.Stem) {
                 const owner = bot.getHost()
-                if (!owner) bot.die()
+                if (!owner) {
+                    bot.die()
+                }
             }
         })
+
+
 
         //this.clearDeadBots()
         //this.draw()
@@ -434,13 +430,19 @@ export default class FullEvo extends CellEngine {
                 const cell = this.getFieldCell(d)
                 if (cell && bot.energy>minBotEnergy*2) {
                     const e = Math.floor(bot.energy / 2)
-                    const newBot = new MainBot(this, this.nextBotId, param%3, d!, e, bot)
+                    this.newBot(param%3, d!, e, bot)
                     bot.delEnergy(e)
-                    this.addBot(newBot)
                 }
             }
             break
         }
+    }
+
+
+    protected newBot(kind: BotKind, position: Point, energy: number, host: Bot | null): Bot {
+        const bot = new MainBot(this, this.nextBotId, kind, position, energy, host)
+        this.addBot(bot)
+        return bot
     }
 
     addOrganic(pos: Point, amount: number): void {
@@ -486,11 +488,15 @@ export default class FullEvo extends CellEngine {
         let minZoneY = -1
         let maxZoneY = -1
 
-        const cf = 0.53
+        const cf = 0.52
         const cf2 = 1-cf
         if (this.params.conf.centerNotEnergy) {
             minZoneX = this.params.size.x*cf2
             maxZoneX = this.params.size.x*cf
+
+        }
+
+        if (this.params.conf.verticalNoEnergy) {
             minZoneY = this.params.size.y*cf2
             maxZoneY = this.params.size.y*cf
         }
@@ -520,8 +526,6 @@ export default class FullEvo extends CellEngine {
             newBotEnergy,
             null,
             randomInt(0, 3),
-            randomColor(),
-            randomColor()
         )
         this.addBot(bot)
     }

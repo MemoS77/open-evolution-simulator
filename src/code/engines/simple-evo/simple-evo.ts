@@ -135,7 +135,7 @@ export default class SimpleEvo extends CellEngine {
             id: "sevo",
             name: "Simple Evolution",
             version: 1,
-            description: "Simplest evolution engine",
+            description: "Первая попытка создания эволюционного процесс на этом движке. Нет полового размножения, только мутации.",
         }
     }
 

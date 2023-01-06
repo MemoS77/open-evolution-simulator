@@ -37,6 +37,12 @@ export function setViewList(list: string[]) {
     })
 }
 
+export function showEngineDescription(info: string) {
+    const desc = document.getElementById("engine-description") as HTMLDivElement
+    desc.innerHTML = info
+}
+
+
 export function setFilterList(list: string[]) {
     const select = document.getElementById("filter-mode") as HTMLSelectElement
     select.innerHTML = ""
