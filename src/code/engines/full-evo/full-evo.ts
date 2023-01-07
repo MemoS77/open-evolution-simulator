@@ -97,7 +97,7 @@ export default class FullEvo extends CellEngine {
 
 
 
-        if (this.cycle % 1000 === 0) {
+        if (this.cycle % 2000 === 0) {
             //const bots = Array.from(this.bots.values())
 
             const all: BotInfo = new Map()
@@ -128,7 +128,7 @@ export default class FullEvo extends CellEngine {
 
             bots.sort((a, b) => b.cnt - a.cnt)
 
-            for (let i = 0; i < Math.min(3, bots.length-1); i++) {
+            for (let i = 0; i < Math.min(7, bots.length-1); i++) {
                 const b = bots[i]
                 console.log("%c" + b.gen, "background-color: " + b.color + "; color: " + b.borderColor + ";font-size:10pt;")
             }
