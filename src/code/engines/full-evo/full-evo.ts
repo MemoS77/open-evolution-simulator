@@ -356,7 +356,10 @@ export default class FullEvo extends CellEngine {
             if (bot.kind !== BotKind.Armor) {
                 if (this.isPoisoned(bot.position)) {
                     //console.log("Die Poison", bot.kind, bot.energy)
-                    bot.die()
+                    if (bot.kind === BotKind.Leaf) bot.die()
+                    else {
+                        bot.delEnergy(minBotEnergy*3)
+                    }
                 }
             }
         })
@@ -520,7 +523,9 @@ export default class FullEvo extends CellEngine {
 
         for (let i = 0; i < this.params.size.x; i++) {
             for (let j = 0; j < this.params.size.y; j++) {
-                this.cells[i][j].energy = ((i>=minZoneX && i<=maxZoneX) || (j>=minZoneY && j<=maxZoneY)) ? 0 : this.getSunEnergy(i, j)
+                this.cells[i][j].energy = Math.round(((i>=minZoneX && i<=maxZoneX) || (j>=minZoneY && j<=maxZoneY)) ? 0 : this.getSunEnergy(i, j))
+                // Попытка исправить баг с пропаданием изображения энергии. Возможно дело не в этом
+                if (this.cells[i][j].energy>maxPhotoEnergy) this.cells[i][j].energy = maxPhotoEnergy
             }
         }
 
