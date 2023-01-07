@@ -36,4 +36,4 @@ export const minBotEnergy = Math.max(idleEnergy, moveEnergy, turnEnergy, mainAct
 
 export const maxNotGrowSteps = 150
 
-export const maxOrganicForPoison = 900
+export const maxOrganicForPoison = maxCellOrganic //900
