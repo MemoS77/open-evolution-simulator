@@ -36,7 +36,7 @@ let uBotsCount = 0
 let lastStems = 0
 let stemsNotGrowSteps = 0
 
-
+const pi2 = Math.PI
 
 export default class FullEvo extends CellEngine {
 
@@ -53,7 +53,7 @@ export default class FullEvo extends CellEngine {
 
     removeBot(bot: Bot): void {
         if (bot.engineIndex >= 0)  {
-            const e = Math.max(Math.floor(bot.energy/10), minBotEnergy)
+            const e = Math.max(Math.floor(bot.energy/10), minBotEnergy*2)
             bot.energy = 0
             // В почве остается немного органики
             this.addOrganic(bot.position, e)
@@ -481,11 +481,19 @@ export default class FullEvo extends CellEngine {
     }
 
 
-    getSunEnergyByRow(x: number): number {
-        // Освещение зависит от цикла солнца
-        return Math.round((maxPhotoEnergy-minPhotoEnergy)*(Math.sin(
-            (this.cycle/300 + x * 2 * Math.PI / (this.params.size.x-1))
-        )+1))+minPhotoEnergy
+    getSunEnergy(x: number, y: number): number {
+        if (this.params.conf.oceanMode) {
+            const max = maxPhotoEnergy * (Math.sin(this.cycle/500%pi2)+1)/2
+            return Math.round((this.params.size.y-y)/this.params.size.y*max)
+        } else {
+            // Освещение зависит от цикла солнца
+            const t = this.cycle / 200 % 3000
+            return Math.round((maxPhotoEnergy - minPhotoEnergy) * (Math.sin(
+                (t + x * 2 * Math.PI / (this.params.size.x - 1))
+            ) + 1) + minPhotoEnergy)
+        }
+
+
     }
 
 
@@ -512,9 +520,38 @@ export default class FullEvo extends CellEngine {
 
         for (let i = 0; i < this.params.size.x; i++) {
             for (let j = 0; j < this.params.size.y; j++) {
-                this.cells[i][j].energy = ((i>=minZoneX && i<=maxZoneX) || (j>=minZoneY && j<=maxZoneY)) ? 0 : this.getSunEnergyByRow(i)
+                this.cells[i][j].energy = ((i>=minZoneX && i<=maxZoneX) || (j>=minZoneY && j<=maxZoneY)) ? 0 : this.getSunEnergy(i, j)
             }
         }
+
+
+        // Органика плавно падает вниз
+        if (this.params.conf.oceanMode && this.cycle%20===0) {
+            for (let i = 0; i < this.params.size.x; i++) {
+                for (let j = this.params.size.y-2; j >=0; j--) {
+                    const cell = this.cells[i][j]
+                    if (cell.organic>0 && j<this.params.size.y-1) {
+                        const cell2 = this.cells[i][j+1]
+                        if (cell2.organic<maxCellOrganic) {
+                            cell2.organic += cell.organic
+                            cell.organic = 0
+                            if (cell2.organic>maxCellOrganic) cell2.organic = maxCellOrganic
+                        }
+                    }
+                }
+            }
+
+        }
+        /* Полосы органики снизу
+        if (this.params.conf.oceanMode) {
+            for (let i = 0; i < this.params.size.x; i++) {
+                for (let j = 0; j < this.params.size.y; j++) {
+                    if (j>this.params.size.y*0.95) {
+                        if (this.cells[i][j].organic<maxCellOrganic/5) this.addOrganic({x:i,y:j}, minBotEnergy)
+                    }
+                }
+            }
+        }*/
 
     }
 

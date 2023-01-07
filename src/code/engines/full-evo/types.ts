@@ -4,7 +4,8 @@ export type WorldParams = {
     // Extra params
     centerNotEnergy?: boolean
     verticalNoEnergy?: boolean,
-    goodBotsProbability?: number
+    goodBotsProbability?: number,
+    oceanMode?: boolean,
 }
 
 export type Cell = {
