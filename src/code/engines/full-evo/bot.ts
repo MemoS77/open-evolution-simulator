@@ -76,10 +76,12 @@ export default abstract class Bot {
             if (host) bots.push(host)
         }
 
-        const e = minBotEnergy*2
+        const eMin = minBotEnergy*2
+
 
         bots.forEach((host) => {
-            if (host.energy+e*2<this.energy) {
+            if (host.energy+eMin<this.energy) {
+                const e = Math.floor(Math.abs(this.energy - host.energy)/2)
                 this.delEnergy(e)
                 host.addEnergy(e)
             }

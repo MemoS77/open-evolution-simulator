@@ -56,6 +56,7 @@ export default abstract class CellEngine extends Engine2d {
             res = {x: x + steps, y}
             break
         }
+
         if (this.isCellExists(res)) return res
         return null
     }
