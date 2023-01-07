@@ -9,7 +9,7 @@ export interface PlantsEngineParams extends EngineParams {
 export const paramsList: PlantsEngineParams[] = [
     {
         name: "Deep Ocean",
-        size: {x: 192, y: 128},
+        size: {x: 192, y: 108},
         count: 1500,
         conf: {
             centerNotEnergy: true,
