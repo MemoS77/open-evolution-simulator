@@ -62,10 +62,30 @@ export default class App {
         this.cont.appendChild(this.canvas)
     }
 
+    private zoomIn(d: number): void {
+        globalVars.camera.zoom *= d<0 ? 1.02 : 0.98
+        this.canvas.width = this.canvas.width + 1 - 1
+        this.ctx.scale(globalVars.camera.zoom, globalVars.camera.zoom)
+        //globalVars.camera.zoom = 1
+        this.clearCanvas()
+        this.engine.draw()
+    }
+
+    private clearCanvas(): void {
+        this.ctx.clearRect(-this.canvas.width*50, -this.canvas.height*50, this.canvas.width*100, this.canvas.height*100)
+    }
+
     private bindEvents() {
+        // zoomIn на пркрутку колеса мыши
+        this.canvas.addEventListener("wheel", (e) => {
+            this.zoomIn(e.deltaY)
+        })
+
+
         window.addEventListener("resize", () => this.onResize())
         this.canvas.addEventListener("mousemove", (e) => {
             if (e.buttons===4) {
+                this.clearCanvas()
                 this.engine.onDrag(e.movementX, e.movementY)
                 this.engine.draw()
             }
