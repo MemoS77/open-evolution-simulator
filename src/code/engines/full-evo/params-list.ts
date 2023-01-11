@@ -8,8 +8,51 @@ export interface PlantsEngineParams extends EngineParams {
 
 export const paramsList: PlantsEngineParams[] = [
     {
-        name: "Deep Ocean",
+        name: "Ocean. Low energy",
+        size: {x: 128, y: 72},
+        count: 2500,
+        conf: {
+            centerNotEnergy: true,
+            oceanMode: true,
+            // Энергия от солнца не более на одну свободную клетку
+            maxPhotoEnergy: 6,
+        }
+    },
+    {
+        name: "Ocean. Low energy. Prepared bots",
+        size: {x: 128, y: 72},
+        count: 2500,
+        conf: {
+            centerNotEnergy: true,
+            oceanMode: true,
+            goodBotsProbability: 30,
+            // Энергия от солнца не более на одну свободную клетку
+            maxPhotoEnergy: 6,
+        }
+    },
+    {
+        name: "Deep Ocean. Normal energy",
         size: {x: 160, y: 90},
+        count: 2500,
+        conf: {
+            centerNotEnergy: true,
+            oceanMode: true,
+            // Энергия от солнца не более на одну свободную клетку
+            maxPhotoEnergy: 8,
+        }
+    },
+    {
+        name: "Deep Ocean. Many energy",
+        size: {x: 160, y: 90},
+        count: 2500,
+        conf: {
+            centerNotEnergy: true,
+            oceanMode: true,
+        }
+    },
+    {
+        name: "Ocean mini",
+        size: {x: 80, y: 45},
         count: 1500,
         conf: {
             centerNotEnergy: true,
@@ -17,19 +60,9 @@ export const paramsList: PlantsEngineParams[] = [
         }
     },
     {
-        name: "Ocean mini with prepared bots",
-        size: {x: 80, y: 45},
-        count: 500,
-        conf: {
-            centerNotEnergy: true,
-            oceanMode: true,
-            goodBotsProbability: 20
-        }
-    },
-    {
-        name: "Standard map. New bots",
+        name: "Standard map",
         size: {x: 145, y: 85},
-        count: 500,
+        count: 1500,
         conf: {
             centerNotEnergy: true,
             verticalNoEnergy: true,
@@ -38,7 +71,7 @@ export const paramsList: PlantsEngineParams[] = [
     {
         name: "Standard map. With prepared bots",
         size: {x: 145, y: 85},
-        count: 500,
+        count: 1500,
         conf: {
             centerNotEnergy: true,
             verticalNoEnergy: true,
@@ -61,7 +94,6 @@ export const paramsList: PlantsEngineParams[] = [
         conf: {
             centerNotEnergy: true,
             goodBotsProbability: 20
-
         }
     },
 

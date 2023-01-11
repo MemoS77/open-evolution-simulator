@@ -4,6 +4,7 @@ export enum CellActionKind {
     Move,
     TurnLeft,
     TurnRight,
+    Die, // Умереть и передать свою энергию предку
 }
 
 

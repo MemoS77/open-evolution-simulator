@@ -6,6 +6,7 @@ export type WorldParams = {
     verticalNoEnergy?: boolean,
     goodBotsProbability?: number,
     oceanMode?: boolean,
+    maxPhotoEnergy?: number
 }
 
 export type Cell = {
