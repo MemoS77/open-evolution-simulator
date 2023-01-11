@@ -72,7 +72,7 @@ export default abstract class Bot {
             host = this.hostByPoint(this.engine.pointByDirection(this.position, FourDirection.Down), false)
             if (host) bots.push(host)
         } else {
-            const host = this.hostByPoint(this.engine.pointByDirection(this.position, invert4Direction(this.direction)), false)
+            const host = this.hostByPoint(this.engine.pointByDirection(this.position, invert4Direction(this.direction)), true)
             if (host) bots.push(host)
         }
 
@@ -81,7 +81,7 @@ export default abstract class Bot {
 
         bots.forEach((host) => {
             if (host.energy+eMin<this.energy) {
-                const e = Math.floor(Math.abs(this.energy - host.energy)/2)
+                const e = Math.ceil(Math.abs(this.energy - host.energy)/(bots.length+1))
                 this.delEnergy(e)
                 host.addEnergy(e)
             }
@@ -108,7 +108,9 @@ export default abstract class Bot {
             if (cell && cell.bots.length > 0) {
                 for (let i = 0; i < cell.bots.length; i++) {
                     const bot = this.engine.getBot(cell.bots[i])
-                    if (bot && (!onlyStem || bot.kind === BotKind.Stem) && this.isSimilar(bot)) return bot
+                    if (bot && (!onlyStem || bot.kind === BotKind.Stem)) {
+                        if (bot.kind !== BotKind.Stem || this.isSimilar(bot)) return bot
+                    }
                 }
             }
         }

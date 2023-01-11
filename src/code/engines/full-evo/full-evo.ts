@@ -4,7 +4,8 @@ import {Cell} from "./types"
 import CellEngine, {cellPadding, drawCellSize, innerCellSize} from "../cell-engine"
 import Point from "../../types/point"
 import {
-    defMaxPhotoEnergy,
+    cellDieEnergyProp,
+    defMaxPhotoEnergy, dieEnergy,
     idleEnergy,
     mainActionEnergy,
     maxCellOrganic, maxNotGrowSteps, maxOrganicForPoison,
@@ -21,6 +22,7 @@ import {BotKind, CellActionKind} from "./enums"
 import {FourDirection} from "../../enums/four-direction"
 import MainBot from "./main-bot"
 import {goodGens_1} from "./good-gens"
+
 
 type BInf = {
     energy: number,
@@ -55,10 +57,10 @@ export default class FullEvo extends CellEngine {
 
     removeBot(bot: Bot): void {
         if (bot.engineIndex >= 0)  {
-            const e = Math.max(Math.floor(bot.energy/10), minBotEnergy*2)
-            bot.energy = 0
+            const e = Math.max(Math.floor(bot.energy/cellDieEnergyProp), minBotEnergy)
             // В почве остается немного органики
             this.addOrganic(bot.position, e)
+            bot.energy = 0
             this.bots.delete(bot.engineIndex)
         }
     }
@@ -291,16 +293,63 @@ export default class FullEvo extends CellEngine {
         })
     }
 
+
+    protected doAction(bot: Bot): void {
+        const act = bot.lastAction
+        if (act) {
+            switch (act.kind) {
+            case CellActionKind.Move:
+                bot.delEnergy(moveEnergy)
+                const d = this.pointByDirection(bot.position, act.param)
+                if (d !== null) bot.position = d
+                break
+            case CellActionKind.TurnLeft:
+                if (bot.kind === BotKind.Stem) {
+                    bot.direction = turn4Left(bot.direction)
+                    bot.delEnergy(turnEnergy)
+                }
+                break
+            case CellActionKind.TurnRight:
+                if (bot.kind === BotKind.Stem) {
+                    bot.direction = turn4Right(bot.direction)
+                    bot.delEnergy(turnEnergy)
+                }
+                break
+            case CellActionKind.MainAction:
+                bot.delEnergy(this.botMainAction(bot, act.param) ? mainActionEnergy : idleEnergy)
+                break
+            case CellActionKind.Die:
+                bot.delEnergy(dieEnergy)
+                if (bot.energy > minBotEnergy) {
+                    const host = bot.getHost()
+                    if (host) {
+                        //console.log("Die", host.energy, bot.energy)
+                        host.addEnergy(bot.energy - minBotEnergy)
+                        bot.energy = 0
+                        bot.die()
+                    }
+                }
+                break
+            default:
+                bot.delEnergy(idleEnergy)
+                break
+            }
+        }
+    }
+
+
     override nextStep(): void {
         this.setCurrentCellEnergy()
         this.indexBots()
 
         // Сначала сделаем все действия ботов, так они действуют одновременно
         this.bots.forEach(bot => {
-            if (bot.kind === BotKind.Stem) bot.lastAction = bot.getAction()
-            else bot.lastAction = {
-                kind: CellActionKind.MainAction,
-                param: 0
+            bot.lastAction = bot.getAction()
+            if (bot.kind !== BotKind.Stem && bot.lastAction.kind!==CellActionKind.Die && bot.lastAction.kind!==CellActionKind.MainAction) {
+                bot.lastAction = {
+                    kind: CellActionKind.MainAction,
+                    param: 0
+                }
             }
         })
 
@@ -324,35 +373,9 @@ export default class FullEvo extends CellEngine {
         // Теперь обработаем все действия ботов
         this.bots.forEach(bot => {
             if (bot.lastAction) {
-                switch (bot.lastAction.kind) {
-                case CellActionKind.Idle:
-                    bot.delEnergy(idleEnergy)
-                    break
-                case CellActionKind.Move:
-                    bot.delEnergy(moveEnergy)
-                    const d = this.pointByDirection(bot.position, bot.lastAction.param)
-                    if (d !== null) bot.position = d
-                    break
-                case CellActionKind.TurnLeft:
-                    if (bot.kind === BotKind.Stem) {
-                        bot.direction = turn4Left(bot.direction)
-                        bot.delEnergy(turnEnergy)
-                    }
-                    break
-                case CellActionKind.TurnRight:
-                    if (bot.kind === BotKind.Stem) {
-                        bot.direction = turn4Right(bot.direction)
-                        bot.delEnergy(turnEnergy)
-                    }
-                    break
-                case CellActionKind.MainAction:
-                    this.botMainAction(bot, bot.lastAction.param)
-                    bot.delEnergy(mainActionEnergy)
-                    break
-                }
+                this.doAction(bot)
+                bot.lastAction = null
             }
-            //console.log("Bot", bot.engineIndex, bot.energy, bot.kind, bot.lastAction)
-            bot.lastAction = null
         })
 
 
@@ -371,7 +394,6 @@ export default class FullEvo extends CellEngine {
 
         this.indexBots()
         this.workCollisions()
-
         this.indexBots()
 
         // Клетки без хоста, умирают
@@ -412,11 +434,11 @@ export default class FullEvo extends CellEngine {
 
 
     protected maxEat(bot: Bot) {
-        return Math.max(bot.energy*2, minBotEnergy*5)
+        return Math.max(bot.energy*2, minBotEnergy*10)
     }
 
 
-    private botMainAction(bot: Bot, param: number): void {
+    private botMainAction(bot: Bot, param: number): boolean {
         const cell = this.getFieldCell(bot.position)
         switch (bot.kind) {
         case BotKind.Leaf:
@@ -427,14 +449,15 @@ export default class FullEvo extends CellEngine {
                 if (this.isDirectionFree(bot.position, FourDirection.Down)) c++
                 if (this.isDirectionFree(bot.position, FourDirection.Left)) c++
                 if (this.isDirectionFree(bot.position, FourDirection.Right)) c++
-                bot.addEnergy(c * cell.energy)
+                bot.addEnergy(c * cell.energy) // С нулевой тоже запускаем, чтобы избыток распределялся
+                //if (c===0) return false
             }
             break
         case BotKind.Armor:
-
             if (cell && cell.energy > 0) {
                 // Съедаем органику, соразмерно энергии бота
                 const e = Math.min(this.maxEat(bot), cell.organic)
+                if (e===0) return false // Не отнимем лишнюю энергии, если нет еды
                 cell.organic -= e
                 bot.addEnergy(e)
             }
@@ -443,7 +466,7 @@ export default class FullEvo extends CellEngine {
             const d = this.pointByDirection(bot.position, bot.direction)
             if (d !== null) {
                 const cell = this.getFieldCell(d)
-                if (cell && bot.energy>minBotEnergy*2) {
+                if (cell && bot.energy>minBotEnergy*3) {
                     const e = Math.floor(bot.energy / 2)
                     this.newBot(param%3, d!, e, bot)
                     bot.delEnergy(e)
@@ -451,6 +474,7 @@ export default class FullEvo extends CellEngine {
             }
             break
         }
+        return true
     }
 
 
@@ -541,16 +565,22 @@ export default class FullEvo extends CellEngine {
 
 
         // Органика плавно падает вниз
-        if (this.params.conf.oceanMode && this.cycle%20===0) {
+        if (this.params.conf.oceanMode && this.cycle%10===0) {
             for (let i = 0; i < this.params.size.x; i++) {
                 for (let j = this.params.size.y-2; j >=0; j--) {
                     const cell = this.cells[i][j]
                     if (cell.organic>0 && j<this.params.size.y-1) {
                         const cell2 = this.cells[i][j+1]
+
                         if (cell2.organic<maxCellOrganic) {
-                            cell2.organic += cell.organic
-                            cell.organic = 0
-                            if (cell2.organic>maxCellOrganic) cell2.organic = maxCellOrganic
+                            if (cell.organic>cell2.organic) {
+                                cell2.organic += cell.organic
+                                cell.organic = 0
+                            } else {
+                                cell2.organic += 1
+                                cell.organic -= 1
+                            }
+                            if (cell2.organic > maxCellOrganic) cell2.organic = maxCellOrganic
                         }
                     }
                 }

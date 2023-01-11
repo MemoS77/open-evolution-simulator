@@ -6,8 +6,9 @@ import {maxGenLength, maxGenSteps, minGenLength} from "./const"
 import {FourDirection} from "../../enums/four-direction"
 import {randomColor} from "../../funcs/utils"
 
-const maxCommand = 48
-const maxMutations = 20
+const maxCommand = 60
+const maxMutations = 30
+const leafDieCommand = 5
 
 export default class MainBot extends Bot {
     private currentGenIndex = 0
@@ -32,7 +33,7 @@ export default class MainBot extends Bot {
         const g = this.getGen()
 
         // Были зацикливания. Очень сильно возрастает счетчик.
-        if (Math.abs(this.cursor)>maxCommand*3) this.cursor = 0
+        if (Math.abs(this.cursor)>g.code.length*3) this.cursor = 0
         else {
             while (this.cursor >= g.code.length) {
                 this.cursor -= g.code.length
@@ -60,10 +61,20 @@ export default class MainBot extends Bot {
     }
 
     override getAction(): CellAction {
-        // Можно и не добавлять, это контролирует движок
-        if (this.kind!==BotKind.Stem) return   {
-            kind: CellActionKind.MainAction,
-            param: 0
+
+        if (this.kind!==BotKind.Stem) {
+            const host = this.getHost()
+            if (host && host.rZ === leafDieCommand) {
+                host.rZ = 0
+                return {
+                    kind: CellActionKind.Die,
+                    param: 0
+                }
+            }
+            return {
+                kind: CellActionKind.MainAction,
+                param: 0
+            }
         }
 
         this.caseGen()
@@ -94,17 +105,15 @@ export default class MainBot extends Bot {
             case 2:
             case 3:
             case 4:
+            case 5:
                 kind = c
                 break
-            case 5:
+            case 6:
                 this.rX--
                 if (this.rX < 0) this.rX = 0
                 break
-            case 6:
-                this.rX = this.rY
-                break
             case 7:
-                this.rY = this.rX
+                this.rX = this.rY
                 break
             case 8:
                 this.rY += this.rX
@@ -172,13 +181,13 @@ export default class MainBot extends Bot {
                 this.rY = targetBot ? targetBot.energy + 1 : 0
                 break
             case 28:
-                if (this.rX > this.rY) this.nextCommand(2)
+                if (this.rX > this.rY) this.nextCommand(3)
                 break
             case 29:
-                if (this.rX < this.rY) this.nextCommand(2)
+                if (this.rX < this.rY) this.nextCommand(3)
                 break
             case 30:
-                if (this.rX === this.rY) this.nextCommand(2)
+                if (this.rX === this.rY) this.nextCommand(3)
                 break
             case 31:
                 this.nextCommand(this.rX + 1)
@@ -187,13 +196,13 @@ export default class MainBot extends Bot {
                 this.nextCommand(this.rY + 1)
                 break
             case 33:
-                kind = this.rX % 5
+                kind = this.rX % 6
                 break
             case 34:
-                kind = this.rY % 5
+                kind = this.rY % 6
                 break
             case 35:
-                kind = this.rZ % 5
+                kind = this.rZ % 6
                 break
             case 36:
                 this.nextCommand(-this.rX - 2)
@@ -230,6 +239,36 @@ export default class MainBot extends Bot {
                 break
             case 47:
                 this.rX = currentCell!.bots.length
+                break
+            case 48:
+                this.cursor = -1
+                break
+            case 49:
+                this.rY = this.rX
+                break
+            case 50:
+                this.rZ = 0
+                break
+            case 52:
+                this.rZ = leafDieCommand  // Например, для сброса листьев
+                break
+            case 53:
+                this.rX = host ? 1 : 0
+                break
+            case 54:
+                this.rY = this.rX>0 ? 1 : 0
+                break
+            case 55:
+                this.rX = this.engine.isPoisonedCell(currentCell!) ? 1 : 0
+                break
+            case 56:
+                if (this.rX > 0) this.nextCommand(3)
+                break
+            case 57:
+                if (this.rY > 0) this.nextCommand(3)
+                break
+            case 58:
+                if (this.rZ > 0) this.nextCommand(3)
                 break
             }
             step++
@@ -306,7 +345,7 @@ export default class MainBot extends Bot {
 
     mutate(): void {
         const idx = randomInt(0, this.genCount-1)
-        const mode = randomInt(0, 50)
+        const mode = randomInt(0, 20)
         if (mode<3) {
             switch (mode) {
             // Добавить случайную команду

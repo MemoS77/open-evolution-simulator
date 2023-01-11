@@ -19,6 +19,18 @@ export const paramsList: PlantsEngineParams[] = [
         }
     },
     {
+        name: "Ocean. Low energy. Prepared bots",
+        size: {x: 128, y: 72},
+        count: 2500,
+        conf: {
+            centerNotEnergy: true,
+            oceanMode: true,
+            goodBotsProbability: 30,
+            // Энергия от солнца не более на одну свободную клетку
+            maxPhotoEnergy: 6,
+        }
+    },
+    {
         name: "Deep Ocean. Normal energy",
         size: {x: 160, y: 90},
         count: 2500,
@@ -26,7 +38,7 @@ export const paramsList: PlantsEngineParams[] = [
             centerNotEnergy: true,
             oceanMode: true,
             // Энергия от солнца не более на одну свободную клетку
-            maxPhotoEnergy: 7,
+            maxPhotoEnergy: 8,
         }
     },
     {
