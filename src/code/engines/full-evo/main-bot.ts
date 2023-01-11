@@ -6,9 +6,8 @@ import {maxGenLength, maxGenSteps, minGenLength} from "./const"
 import {FourDirection} from "../../enums/four-direction"
 import {randomColor} from "../../funcs/utils"
 
-const maxCommand = 42
-
-const maxMutations = 30
+const maxCommand = 48
+const maxMutations = 20
 
 export default class MainBot extends Bot {
     private currentGenIndex = 0
@@ -67,14 +66,13 @@ export default class MainBot extends Bot {
             param: 0
         }
 
-
         this.caseGen()
         const g = this.getGen()
-
         const host = this.getHost()
         let kind = null
-
         let step = 0
+
+
 
         let p = this.engine.pointByDirection(this.position, this.direction, this.rX%4)
         const y = this.rY%3
@@ -83,9 +81,9 @@ export default class MainBot extends Bot {
         }
 
         const targetCell = p ? this.engine.getFieldCell(p) : null
+        const currentCell = this.engine.getFieldCell(this.position)
         const targetBot = targetCell ? (targetCell.bots.length ? this.engine.getBot(targetCell.bots[0]) : null) : null
         const isSimilar = targetBot!==null && this.isSimilar(targetBot)
-
 
 
         do {
@@ -103,16 +101,16 @@ export default class MainBot extends Bot {
                 if (this.rX < 0) this.rX = 0
                 break
             case 6:
-                this.rX = this.rY ?? 0
+                this.rX = this.rY
                 break
             case 7:
-                this.rY = this.rX ?? 0
+                this.rY = this.rX
                 break
             case 8:
-                this.rY+=this.rX ?? 0
+                this.rY += this.rX
                 break
             case 9:
-                this.rY-=this.rX ?? 0
+                this.rY -= this.rX
                 if (this.rY < 0) this.rY = 0
                 break
             case 10:
@@ -141,16 +139,16 @@ export default class MainBot extends Bot {
                 this.rY = this.rZ
                 break
             case 18:
-                this.rX ++
+                this.rX++
                 break
             case 19:
-                this.rX = host ? host.rX : 0
+                this.rX = host ? host.rX + 1 : 0
                 break
             case 20:
-                this.rY = host ? host.rY : 0
+                this.rY = host ? host.rY + 1 : 0
                 break
             case 21:
-                this.rZ = host ? host.rZ : 0
+                this.rZ = host ? host.rZ + 1 : 0
                 break
             case 22:
                 this.rX = this.rX + this.rY
@@ -162,43 +160,43 @@ export default class MainBot extends Bot {
                     : 0) : 3
                 break
             case 24:
-                this.rY = targetBot ? (targetBot.kind+1) : 0
+                this.rY = targetBot ? (targetBot.kind + 1) : 0
                 break
             case 25:
                 this.rY = targetCell ? targetCell.energy : 0
                 break
             case 26:
-                this.rY = targetCell ? targetCell.organic: 0
+                this.rY = targetCell ? targetCell.organic : 0
                 break
             case 27:
-                this.rY = targetBot ? targetBot.energy+1 : 0
+                this.rY = targetBot ? targetBot.energy + 1 : 0
                 break
             case 28:
-                if (this.rX>this.rY) this.nextCommand(2)
+                if (this.rX > this.rY) this.nextCommand(2)
                 break
             case 29:
-                if (this.rX<this.rY) this.nextCommand(2)
+                if (this.rX < this.rY) this.nextCommand(2)
                 break
             case 30:
-                if (this.rX===this.rY) this.nextCommand(2)
+                if (this.rX === this.rY) this.nextCommand(2)
                 break
             case 31:
-                this.nextCommand(this.rX+1)
+                this.nextCommand(this.rX + 1)
                 break
             case 32:
-                this.nextCommand(this.rY+1)
+                this.nextCommand(this.rY + 1)
                 break
             case 33:
-                kind = this.rX%5
+                kind = this.rX % 5
                 break
             case 34:
-                kind = this.rY%5
+                kind = this.rY % 5
                 break
             case 35:
-                kind = this.rZ%5
+                kind = this.rZ % 5
                 break
             case 36:
-                this.nextCommand(-this.rX-2)
+                this.nextCommand(-this.rX - 2)
                 break
             case 37:
                 this.rX = randomInt(0, 1)
@@ -210,7 +208,28 @@ export default class MainBot extends Bot {
                 this.nextCommand(-5)
                 break
             case 40:
-                this.rY = targetCell ? (this.engine.isPoisonedCell(targetCell) ? 1: 0) : 1
+                this.rX = targetCell ? (this.engine.isPoisonedCell(targetCell) ? 2 : 0) : 1
+                break
+            case 41:
+                this.rX = this.position.x
+                break
+            case 42:
+                this.rX = this.position.y
+                break
+            case 43:
+                this.rZ = this.rX
+                break
+            case 44:
+                this.rX = this.rZ
+                break
+            case 45:
+                this.rX = currentCell!.energy
+                break
+            case 46:
+                this.rX = currentCell!.organic
+                break
+            case 47:
+                this.rX = currentCell!.bots.length
                 break
             }
             step++
@@ -318,9 +337,22 @@ export default class MainBot extends Bot {
 
     // Половое размножение
     override mergeStem(bot: MainBot): void {
-        const idx = randomInt(0, this.genCount-1)
-        //console.log("Merge Stem",idx)
-        this.gens[idx] = this.copyGen(bot.gens[idx])
+        const nums = []
+        for (let i = 0; i < this.genCount; i++) {
+            nums.push(i)
+        }
+
+        nums.sort(() => Math.random() - 0.5)
+        const botNums = [...nums]
+
+        if (randomInt(0, 100) < 5) {  /// Иногда меняем местами гены
+            botNums.sort(() => Math.random() - 0.5)
+            //console.log(nums, botNums)
+        }
+
+        for (let i = 0; i < this.genCount/2; i++) {
+            this.gens[nums[i]] = this.copyGen(bot.gens[botNums[i]])
+        }
     }
 
 

@@ -1,8 +1,8 @@
 // Ген не может быть длиннее
-export const maxGenLength = 128
+export const maxGenLength = 100
 
 // Максимально шагов прохода гена, если перебор, то простой
-export const maxGenSteps = 120
+export const maxGenSteps = 100
 
 // Ген не может быть короче
 export const minGenLength = 10
@@ -10,8 +10,7 @@ export const minGenLength = 10
 // Энергия нового бота
 export const newBotEnergy = 400
 
-// Энергия от солнца не более на одну свободную клетку
-export const maxPhotoEnergy = 11
+export const defMaxPhotoEnergy = 11
 
 export const minPhotoEnergy = 1
 
@@ -28,6 +27,7 @@ export const moveEnergy = 4
 export const turnEnergy = 2
 
 export const mainActionEnergy = 4
+
 
 // Минимальная энергия бота
 export const minBotEnergy = Math.max(idleEnergy, moveEnergy, turnEnergy, mainActionEnergy)

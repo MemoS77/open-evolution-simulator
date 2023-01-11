@@ -128,17 +128,14 @@ export default abstract class Bot {
     abstract getColors(): drawColors
 
     draw(ctx: CanvasRenderingContext2D): void {
-        let colors
+        const colors = this.getColors()
         if (globalVars.showMode === 1) {
             const def = 50
             const green = Math.floor((this.energy + def) / (def + maxBotEnergy) * 255)
-            const color = `rgb(0,${green},0)`
-            colors = {
-                borderColor: color,
-                color: `rgb(0,${green},0)`,
-            }
-        } else
-            colors = this.getColors()
+            //const color = `rgb(0,${green},0)`
+            colors.color = `rgb(0,${green},0)`
+            colors.borderColor = colors.color
+        }
 
 
         switch (this.kind) {

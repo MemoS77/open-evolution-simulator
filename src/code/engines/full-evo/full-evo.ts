@@ -4,10 +4,10 @@ import {Cell} from "./types"
 import CellEngine, {cellPadding, drawCellSize, innerCellSize} from "../cell-engine"
 import Point from "../../types/point"
 import {
+    defMaxPhotoEnergy,
     idleEnergy,
     mainActionEnergy,
     maxCellOrganic, maxNotGrowSteps, maxOrganicForPoison,
-    maxPhotoEnergy,
     minBotEnergy, minPhotoEnergy,
     moveEnergy,
     newBotEnergy,
@@ -37,6 +37,8 @@ let lastStems = 0
 let stemsNotGrowSteps = 0
 
 const pi2 = Math.PI
+
+
 
 export default class FullEvo extends CellEngine {
 
@@ -138,6 +140,9 @@ export default class FullEvo extends CellEngine {
 
     drawCells(): void {
         const filter = globalVars.filterMode
+        const maxPhotoEnergy = this.params.conf.maxPhotoEnergy ?? defMaxPhotoEnergy
+
+
         this.cells.forEach((row, i) => {
             row.forEach((c, j) => {
                 this.ctx.fillStyle = "black"
@@ -406,7 +411,7 @@ export default class FullEvo extends CellEngine {
 
 
 
-    private maxEat(bot: Bot) {
+    protected maxEat(bot: Bot) {
         return Math.max(bot.energy*2, minBotEnergy*5)
     }
 
@@ -468,6 +473,8 @@ export default class FullEvo extends CellEngine {
 
     override initCells(): void {
         this.cells = []
+        const maxPhotoEnergy = this.params.conf.maxPhotoEnergy ?? defMaxPhotoEnergy
+
         for (let i = 0; i < this.params.size.x; i++) {
             this.cells[i] = []
             for (let j = 0; j < this.params.size.y; j++) {
@@ -485,6 +492,7 @@ export default class FullEvo extends CellEngine {
 
 
     getSunEnergy(x: number, y: number): number {
+        const maxPhotoEnergy = this.params.conf.maxPhotoEnergy ?? defMaxPhotoEnergy
         if (this.params.conf.oceanMode) {
             const max = maxPhotoEnergy * (Math.sin(this.cycle/500%pi2)+1)/2
             return Math.round((this.params.size.y-y)/this.params.size.y*max)
@@ -501,6 +509,8 @@ export default class FullEvo extends CellEngine {
 
 
     setCurrentCellEnergy(): void {
+        const maxPhotoEnergy = this.params.conf.maxPhotoEnergy ?? defMaxPhotoEnergy
+
         let minZoneX = -1
         let maxZoneX = -1
         let minZoneY = -1
